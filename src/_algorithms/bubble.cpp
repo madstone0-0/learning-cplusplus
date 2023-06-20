@@ -49,7 +49,7 @@ int main() {
         list[i] = rand() % 1000;
     }
 
-    TimerClass* bubbleSortTimer = new TimerClass{"BubbleSortTimer"};
+    TimerClass* bubbleSortTimer = new TimerClass{"BubbleSort"};
     int* sorted = bubble(list);
     delete bubbleSortTimer;
 

@@ -57,15 +57,15 @@ void mergeSort(T (&arr)[n], size_t start, size_t end) {
 
 int main() {
     srand(100);
-    int listInts[50]{};
-    for (size_t i = 0; i < 50; i++) {
-        listInts[i] = rand() % 100;
+    int listInts[1000]{};
+    for (size_t i = 0; i < 1000; i++) {
+        listInts[i] = rand() % 1000;
     }
     size_t len = sizeof(listInts) / sizeof(listInts[0]) - 1;
     TimerClass* mergeSortTimer = new TimerClass{"MergeSort"};
     mergeSort(listInts, 0, len);
     delete mergeSortTimer;
-    for (auto i = 0; i < len + 1; i++) {
+    for (auto i = 0; i < 50; i++) {
         cout << listInts[i] << " ";
     }
     cout << "\n";

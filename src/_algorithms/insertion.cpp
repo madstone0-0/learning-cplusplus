@@ -44,10 +44,10 @@ int main() {
     srand(100);
     int listInts[1000]{};
     for (size_t i = 0; i < 1000; i++) {
-        listInts[i] = rand() % 10000;
+        listInts[i] = rand() % 1000;
     }
 
-    TimerClass* insertSortTimer = new TimerClass{"InsertSortTimer"};
+    TimerClass* insertSortTimer = new TimerClass{"InsertSort"};
     int* sortedInts = insertion(listInts);
     delete insertSortTimer;
 
