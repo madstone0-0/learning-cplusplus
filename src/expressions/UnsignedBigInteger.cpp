@@ -5,81 +5,109 @@
 #include <cstring>
 #include <exception>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
+#include <type_traits>
 
 template <typename T>
 concept Integer = requires(T a, T b) { a | b; };
 
-template <Integer T>
+struct Bytes {
+    unsigned char* bytes;
+    int sizeofType;
+};
+
+// template <Integer T>
 struct UnsignedBigInteger {
     UnsignedBigInteger() = default;
-    UnsignedBigInteger(T integer) {
-        std::copy(static_cast<const uint8_t*>(static_cast<const void*>(&integer)),
-                  static_cast<const uint8_t*>(static_cast<const void*>(&integer)) + sizeof(T), bytes);
+    UnsignedBigInteger(unsigned long long integer) : starting_size{8}, size{8}, bytes{new uint8_t[size]} {
+        for (auto i = 0; i < size; i++) {
+            bytes[i] = static_cast<uint8_t>(integer >> (i * 8));
+        }
+        trim();
     }
 
     explicit operator int() const {
         int converted;
+        unsigned long long original;
         std::memcpy(&converted, bytes, sizeof(int));
-        const auto backwards = static_cast<T>(converted);
-        if (converted != backwards) std::runtime_error("Narrowed!");
+        std::memcpy(&original, bytes, starting_size);
+        // const auto backwards = static_cast<unsigned long long>(converted);
+        if (converted != original) throw std::runtime_error("Narrowed!");
         return converted;
     }
 
     // UnsignedBigInteger(T integer) : bytes{*reinterpret_cast<uint8_t*>(&integer)} {}
-    UnsignedBigInteger operator+(UnsignedBigInteger other) {
-        T value1;
-        T value2;
-        std::memcpy(&value1, bytes, sizeof(T));
-        std::memcpy(&value2, other.bytes, sizeof(T));
+    UnsignedBigInteger operator+(const UnsignedBigInteger& other) const {
+        unsigned long long value1;
+        unsigned long long value2;
+        std::memcpy(&value1, bytes, starting_size);
+        std::memcpy(&value2, other.bytes, other.starting_size);
         auto sum = value1 + value2;
         if (sum < value1) throw std::overflow_error("Overflow!");
         UnsignedBigInteger res{sum};
         return res;
     }
-    UnsignedBigInteger operator+(T other) {
-        T value;
-        std::memcpy(&value, bytes, sizeof(T));
+
+    ~UnsignedBigInteger() { delete[] bytes; }
+
+    UnsignedBigInteger operator+(const unsigned long long other) const {
+        unsigned long long value;
+        std::memcpy(&value, bytes, starting_size);
         auto sum = value + other;
         if (sum < value) throw std::overflow_error("Overflow!");
         UnsignedBigInteger res{sum};
         return res;
     }
 
-    UnsignedBigInteger operator-(T other) {
-        T value;
-        std::memcpy(&value, bytes, sizeof(T));
+    // friend std::ostream& operator<<(std::ostream& os, const UnsignedBigInteger& num) {
+    //     for (int i = static_cast<int>(num.size) - 1; i >= 0; i--) {
+    //         os << (static_cast<int>(num.bytes[i]) & 0xff);
+    //     }
+    //     return os;
+    // }
+
+    UnsignedBigInteger operator-(unsigned long long other) {
+        unsigned long long value;
+        std::memcpy(&value, bytes, starting_size);
         auto diff = value - other;
         if (diff > value) throw std::overflow_error("Overflow!");
         UnsignedBigInteger res{diff};
         return res;
     }
 
-    UnsignedBigInteger operator-(UnsignedBigInteger other) {
-        T value1;
-        T value2;
-        std::memcpy(&value1, bytes, sizeof(T));
-        std::memcpy(&value2, other.bytes, sizeof(T));
+    UnsignedBigInteger operator-(const UnsignedBigInteger& other) const {
+        unsigned long long value1;
+        unsigned long long value2;
+        std::memcpy(&value1, bytes, starting_size);
+        std::memcpy(&value2, other.bytes, starting_size);
         auto diff = value1 - value2;
         if (diff > value1) throw std::overflow_error("Overflow!");
         UnsignedBigInteger res{diff};
         return res;
     }
 
-    uint8_t bytes[sizeof(T)];
+   private:
+    size_t starting_size;
+    size_t size;
+    uint8_t* bytes;
+
+    void trim() {
+        while (size > 1 && bytes[size - 1] == 0) {
+            size--;
+        }
+    }
 };
 
 int main() {
     UnsignedBigInteger x{909090909090};
     UnsignedBigInteger y{909090909090};
     UnsignedBigInteger u{9};
-    UnsignedBigInteger a = 0x123456789abcdef0;
-    UnsignedBigInteger b = 0xfedcba9876543210;
     int z{9};
     long i{909090909090};
-    // auto res = x + y;
+    auto res = x + y;
     try {
-        auto res2 = x + 9999999999999999999;
+        auto res2 = x + std::numeric_limits<unsigned long long>::max();
 
     } catch (std::exception& e) {
         printf("Execption: %s\n", e.what());
@@ -92,8 +120,6 @@ int main() {
     } catch (std::runtime_error& e) {
         printf("Runtime: %s", e.what());
     }
-
-    std::cout << "res4: " << static_cast<int>(res4) << "\n";
 
     return 0;
 }
