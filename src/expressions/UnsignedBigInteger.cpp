@@ -33,7 +33,7 @@ struct UnsignedBigInteger {
         std::memcpy(&converted, bytes, sizeof(int));
         std::memcpy(&original, bytes, starting_size);
         // const auto backwards = static_cast<unsigned long long>(converted);
-        if (converted != original) throw std::runtime_error("Narrowed!");
+        if (converted != original) throw std::runtime_error("Narrowed!\n");
         return converted;
     }
 
@@ -120,6 +120,8 @@ int main() {
     } catch (std::runtime_error& e) {
         printf("Runtime: %s", e.what());
     }
+
+    std::cout << "res4: " << static_cast<int>(u + 9) << "\n";
 
     return 0;
 }
