@@ -78,10 +78,10 @@ template <typename T>
 struct Bank {
     void set_logger(Logger* logger) { this->logger = logger; }
 
-    void make_transfer(T from, T to, double amount) {
-        logger->log_transfer(from->getId(), to->getId(), amount);
-        from->withdraw(amount);
-        to->deposit(amount);
+    void make_transfer(T& from, T& to, double amount) {
+        logger->log_transfer(from.getId(), to.getId(), amount);
+        from.withdraw(amount);
+        to.deposit(amount);
     }
 
    private:
@@ -96,12 +96,12 @@ int main() {
     CheckingAccount martinC{900, 500};
     SavingsAccount martinS{900, 4000};
     CheckingAccount agnes{792, 100};
-    Bank<Account*> bank;
+    Bank<Account> bank;
     bank.set_logger(&con);
-    bank.make_transfer(&martinC, &martinS, 500);
+    bank.make_transfer(martinC, martinS, 500);
     bank.set_logger(&file);
-    bank.make_transfer(&martinS, &agnes, 600);
+    bank.make_transfer(martinS, agnes, 600);
     bank.set_logger(&con);
-    bank.make_transfer(&martinS, &martinC, 400);
+    bank.make_transfer(martinS, martinC, 400);
     return 0;
 }
