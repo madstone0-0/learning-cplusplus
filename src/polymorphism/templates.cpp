@@ -145,10 +145,10 @@ T square(T x) {
 // Concepts in action
 template <typename T>
 concept Averageable = requires(T a, T b) {
-                          std::is_default_constructible<T>::value;
-                          a += b;
-                          a / size_t{1};
-                      };
+    std::is_default_constructible<T>::value;
+    a += b;
+    a / size_t{1};
+};
 
 template <Averageable T>
 T mean(const T* values, size_t length) {
@@ -206,23 +206,23 @@ struct Highlander {
 /* Concepts */
 
 /* static_assert */
-template <typename T>
-T mean(const T* values, size_t length) {
-    static_assert(std::is_default_constructible<T>(),
-                  "Type must be default constructible");
-    static_assert(std::is_copy_constructible<T>(),
-                  "Type must be copy constructible");
-    static_assert(std::is_arithmetic<T>(),
-                  "Type must support addition and subtraction");
-    static_assert(std::is_constructible<T, size_t>(),
-                  "Type must be constructible from size_t.");
-
-    T sum{};
-    for (size_t i = 0; i < length; i++) {
-        sum += values[i];
-    }
-    return sum / length;
-}
+// template <typename T>
+// T mean(const T* values, size_t length) {
+//     static_assert(std::is_default_constructible<T>(),
+//                   "Type must be default constructible");
+//     static_assert(std::is_copy_constructible<T>(),
+//                   "Type must be copy constructible");
+//     static_assert(std::is_arithmetic<T>(),
+//                   "Type must support addition and subtraction");
+//     static_assert(std::is_constructible<T, size_t>(),
+//                   "Type must be constructible from size_t.");
+//
+//     T sum{};
+//     for (size_t i = 0; i < length; i++) {
+//         sum += values[i];
+//     }
+//     return sum / length;
+// }
 
 /* static_assert */
 
@@ -250,13 +250,13 @@ T& get(T (&arr)[size]) {
     return arr[index];
 }
 
-// int main() {
-//     int fib[]{1, 1, 2, 0};
-//     printf("%d %d %d ", get<0>(fib), get<1>(fib), get<2>(fib));
-//     get<3>(fib) = get<1>(fib) + get<2>(fib);
-//     printf("%d\n", get<3>(fib));
-//     // printf("%d", get<4>(fib));
-// }
+int main() {
+    int fib[]{1, 1, 2, 0};
+    printf("%d %d %d ", get<0>(fib), get<1>(fib), get<2>(fib));
+    get<3>(fib) = get<1>(fib) + get<2>(fib);
+    printf("%d\n", get<3>(fib));
+    // printf("%d", get<4>(fib));
+}
 
 /* Non Type Template Parameters */
 
@@ -275,10 +275,7 @@ struct SimpleUniquePointer {
     SimpleUniquePointer(const SimpleUniquePointer&) = delete;
     SimpleUniquePointer& operator=(const SimpleUniquePointer&) = delete;
 
-    SimpleUniquePointer(SimpleUniquePointer&& other) noexcept
-        : pointer{other.pointer} {
-        other.pointer = nullptr;
-    }
+    SimpleUniquePointer(SimpleUniquePointer&& other) noexcept : pointer{other.pointer} { other.pointer = nullptr; }
 
     SimpleUniquePointer&& operator=(SimpleUniquePointer&& other) noexcept {
         if (pointer) delete pointer;

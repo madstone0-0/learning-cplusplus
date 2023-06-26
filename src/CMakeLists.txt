@@ -1,0 +1,14 @@
+cmake_minimum_required(VERSION 3.14)
+
+project(Learning LANGUAGES CXX)
+
+add_subdirectory(expressions)
+add_subdirectory(statements)
+add_subdirectory(functions)
+add_subdirectory(misc)
+add_subdirectory(modern)
+add_subdirectory(obj_life)
+add_subdirectory(polymorphism)
+add_subdirectory(reference_types)
+add_subdirectory(types)
+add_subdirectory(unit_testing)

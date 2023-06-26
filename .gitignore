@@ -1,4 +1,7 @@
 .ccls-cache
 build
+build_old
+CMakeFiles
 tags
 *.log
+.cmake
