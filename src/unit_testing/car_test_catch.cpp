@@ -3,7 +3,6 @@
 #include <stdexcept>
 
 #include "car.cpp"
-#include "catch_amalgamated.cpp"
 
 using namespace Catch;
 

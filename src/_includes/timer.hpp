@@ -1,3 +1,6 @@
+#ifndef TIMER_INCLUDE
+#define TIMER_INCLUDE
+
 #include <sys/time.h>
 #include <unistd.h>
 
@@ -17,3 +20,5 @@ struct TimerClass {
     timeval *timestamp;
     char *name;
 };
+
+#endif

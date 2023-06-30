@@ -1,38 +1,29 @@
 // #include <icecream.hpp>
+#include "bytes.hpp"
+
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
-#include <string>
 
-#include "utils.cpp"
+#include "utils.hpp"
 
-namespace Bytes {
-    using std::string;
+Bytes::Byte Bytes::convert(const double value, const string unit, const string toUnit) {
+    using Utils::getIndex, std::pow, std::abs;
+    if (unit == toUnit) return {value, unit};
 
-    struct Byte {
-        double value;
-        string unit;
-    };
+    string units[]{"B", "KB", "MB", "GB", "TB", "PB"};
+    int powers[]{0, 10, 20, 30, 40, 50};
 
-    Byte convert(const double value, const string unit, const string toUnit) {
-        using Utils::getIndex, std::pow, std::abs;
-        if (unit == toUnit) return {value, unit};
+    try {
+        auto unitPower{powers[getIndex(units, unit)]};
+        auto toUnitPower{powers[getIndex(units, toUnit)]};
+        auto multiple = abs(unitPower - toUnitPower);
 
-        string units[]{"B", "KB", "MB", "GB", "TB", "PB"};
-        int powers[]{0, 10, 20, 30, 40, 50};
+        double newValue = unitPower > toUnitPower ? value * pow(2, multiple) : value / pow(2, multiple);
 
-        try {
-            auto unitPower{powers[getIndex(units, unit)]};
-            auto toUnitPower{powers[getIndex(units, toUnit)]};
-            auto multiple = abs(unitPower - toUnitPower);
+        return {newValue, toUnit};
 
-            double newValue = unitPower > toUnitPower ? value * pow(2, multiple) : value / pow(2, multiple);
-
-            return {newValue, toUnit};
-
-        } catch (const std::invalid_argument& e) {
-            throw std::invalid_argument("Invalid unit");
-        }
+    } catch (const std::invalid_argument& e) {
+        throw std::invalid_argument("Invalid unit");
     }
-
-}  // namespace Bytes
+}

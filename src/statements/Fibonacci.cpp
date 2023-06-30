@@ -1,6 +1,6 @@
 #include <cstdio>
 
-#include "fib.cpp"
+#include "fib.hpp"
 
 int main() {
     for (const auto i : FibonacciRange{5000}) {

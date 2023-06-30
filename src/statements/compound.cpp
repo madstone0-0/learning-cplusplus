@@ -1,6 +1,6 @@
 #include <cstdio>
 
-#include "tracer.cpp"
+#include "tracer.hpp"
 
 int main() {
     Tracer main{"main"};

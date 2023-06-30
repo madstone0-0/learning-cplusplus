@@ -1,4 +1,4 @@
-#include "prime.cpp"
+#include "prime.hpp"
 
 #include <cstdio>
 

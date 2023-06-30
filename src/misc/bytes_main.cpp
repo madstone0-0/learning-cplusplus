@@ -1,6 +1,7 @@
 #include <algorithm>
+#include <iostream>
 
-#include "bytes.cpp"
+#include "bytes.hpp"
 using std::cout, std::string;
 
 int main(int argc, char* argv[]) {

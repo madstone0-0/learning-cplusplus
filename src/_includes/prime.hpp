@@ -1,3 +1,6 @@
+#ifndef PRIME_INCLUDE
+#define PRIME_INCLUDE
+
 struct PrimeNumberIterator {
     bool operator!=(int) const;
     PrimeNumberIterator& operator++();
@@ -15,3 +18,5 @@ struct PrimeNumberRange {
    private:
     const int max;
 };
+
+#endif  // !PRIME_INCLUDE

@@ -70,14 +70,14 @@ int main() {
     delete dinner;
     delete[] large;
 
-    try {
-        while (true) {
-            new char;
-            printf("Allocated a char.\n");
-        }
-    } catch (const std::bad_alloc&) {
-        printf("std::bad_alloc caught.\n");
-    }
+    // try {
+    //     while (true) {
+    //         new char;
+    //         printf("Allocated a char.\n");
+    //     }
+    // } catch (const std::bad_alloc&) {
+    //     printf("std::bad_alloc caught.\n");
+    // }
 
     return 0;
 }

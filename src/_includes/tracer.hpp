@@ -1,3 +1,6 @@
+#ifndef TRACER_INCLUDE
+#define TRACER_INCLUDE
+
 #include <cstdio>
 #include <iostream>
 
@@ -8,3 +11,5 @@ struct Tracer {
    private:
     const char* name;
 };
+
+#endif

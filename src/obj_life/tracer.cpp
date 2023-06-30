@@ -19,6 +19,7 @@ int main() {
     Tracer t3{"Automatic"};
     printf("B\n");
     const auto* t4 = new Tracer{"Dynamic"};
+    delete t4;
     printf("C\n");
     return 0;
 }

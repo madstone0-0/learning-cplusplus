@@ -1,3 +1,6 @@
+#ifndef FIB_INCLUDE
+#define FIB_INCLUDE
+
 struct FibonacciIterator {
     bool operator!=(int) const;
     FibonacciIterator& operator++();
@@ -16,3 +19,5 @@ struct FibonacciRange {
    private:
     const int max;
 };
+
+#endif

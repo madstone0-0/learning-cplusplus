@@ -2,8 +2,8 @@
 #include <iostream>
 #include <iterator>
 
-#include "algorithms.cpp"
-#include "timer.cpp"
+#include "algorithms.hpp"
+#include "timer.hpp"
 
 template <typename T>
 void printArray(T* arr, size_t maxShown) {
