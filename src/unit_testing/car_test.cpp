@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include "mock_og.cpp"
+
 constexpr void assertThat(bool statment, const char* message = "Nope") {
     if (!statment) throw std::runtime_error{message};
 }
