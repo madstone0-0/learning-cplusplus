@@ -35,11 +35,11 @@ int main() {
     std::copy(std::begin(originalList), std::end(originalList), std::begin(workingList));
 
     printf("Dataset size: %zu\n=====\n\n", arrayLength);
-    TimerClass* bubbleSort = new TimerClass("BubbleSort");
-    bubble(workingList);
-    delete bubbleSort;
-    printArray(workingList, 20);
-    std::copy(std::begin(originalList), std::end(originalList), std::begin(workingList));
+    // TimerClass* bubbleSort = new TimerClass("BubbleSort");
+    // bubble(workingList);
+    // delete bubbleSort;
+    // printArray(workingList, 20);
+    // std::copy(std::begin(originalList), std::end(originalList), std::begin(workingList));
 
     TimerClass* insertSort = new TimerClass("InsertSort");
     insertion(workingList);

@@ -4,6 +4,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include <boost/smart_ptr/scoped_array.hpp>
+#include <boost/smart_ptr/scoped_ptr.hpp>
 #include <cstring>
 #include <iostream>
 #include <utility>
@@ -17,8 +19,8 @@ struct TimerClass {
     ~TimerClass();
 
    private:
-    timeval *timestamp;
-    char *name;
+    boost::scoped_ptr<timeval> timestamp{};
+    boost::scoped_array<char> name{};
 };
 
 #endif
