@@ -1,4 +1,4 @@
-#include "catch_amalgamated.hpp"
+#include <catch2/catch.hpp>
 #define CATCH_CONFIG_MAIN
 #include "car.cpp"
 #include "hippomocks.h"

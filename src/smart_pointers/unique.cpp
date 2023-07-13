@@ -1,5 +1,5 @@
 #define CATCH_CONFIG_MAIN
-#include <catch_amalgamated.hpp>
+#include <catch2/catch.hpp>
 #include <memory>
 #include <utility>
 

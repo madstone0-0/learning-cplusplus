@@ -11,8 +11,14 @@ include_directories("src/_includes")
 set(INCLUDE ${CMAKE_SOURCE_DIR}/src/_includes)
 set(TIMER ${INCLUDE}/timer.hpp ${INCLUDE}/timer.cpp)
 set(TRACER ${INCLUDE}/tracer.hpp ${INCLUDE}/tracer.cpp)
-set(CATCH ${INCLUDE}/catch_amalgamated.hpp ${INCLUDE}/catch_amalgamated.cpp)
 # file(GLOB_RECURSE HEADERS "src/_includes/*.hpp")
+
+#################
+# Catch2        #
+#################
+find_package(Catch2 REQUIRED)
+
+
 
 #################
 # IceCream      #
