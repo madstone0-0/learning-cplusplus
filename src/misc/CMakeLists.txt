@@ -11,3 +11,6 @@ add_executable(bytes_test bytes_test.cpp ${BYTE_HEADERS} ${CATCH})
 add_executable(diagSum diagSum.cpp)
 add_executable(fast_inv_sqrt fast_inv_sqrt.cpp)
 add_executable(donut donut.cpp)
+add_executable(timer_test timer_test.cpp ${TIMER})
+# add_executable(imports imports.cpp)
+

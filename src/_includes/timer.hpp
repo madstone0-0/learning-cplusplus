@@ -4,23 +4,24 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#include <boost/smart_ptr/scoped_array.hpp>
-#include <boost/smart_ptr/scoped_ptr.hpp>
+#include <chrono>
 #include <cstring>
 #include <iostream>
+#include <memory>
 #include <utility>
 
 struct TimerClass {
-    TimerClass(const char *x);
+    explicit TimerClass(const char *x);
     TimerClass(const TimerClass &other);
     TimerClass(TimerClass &&other) noexcept;
     TimerClass &operator=(const TimerClass &other);
     TimerClass &operator=(TimerClass &&other) noexcept;
     ~TimerClass();
 
-   private:
-    boost::scoped_ptr<timeval> timestamp{};
-    boost::scoped_array<char> name{};
+    // std::shared_ptr<std::chrono::time_point<std::chrono::high_resolution_clock>> timestamp =
+    //     std::make_shared<std::chrono::time_point<std::chrono::high_resolution_clock>>();
+    std::shared_ptr<std::chrono::time_point<std::chrono::high_resolution_clock>> timestamp{};
+    std::shared_ptr<char[]> name{};
 };
 
 #endif

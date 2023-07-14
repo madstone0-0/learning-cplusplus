@@ -20,7 +20,6 @@ int main(int argc, char* argv[]) {
     } else {
         try {
             value = std::stol(argv[1]);
-
         } catch (const std::exception& e) {
             printf("Exception: %s\n", e.what());
             return 1;

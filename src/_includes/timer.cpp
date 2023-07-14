@@ -1,38 +1,31 @@
 #include "timer.hpp"
 
-#include <boost/smart_ptr/scoped_array.hpp>
-#include <boost/smart_ptr/scoped_ptr.hpp>
-
-using std::strncpy, std::cout, boost::scoped_ptr, boost::scoped_array;
+using std::strncpy, std::cout, std::chrono::high_resolution_clock, std::chrono::time_point;
 
 template <typename T>
 constexpr T abs(T x) {
     return x < 0 ? x * -1 : x;
 }
 
-TimerClass::TimerClass(const char *x) : timestamp{new timeval{}}, name{new char[strlen(x)]{}} {
-    strncpy(name.get(), x, strlen(x));
-    gettimeofday(timestamp.get(), NULL);
+TimerClass::TimerClass(const char *x)
+    : timestamp{new time_point<high_resolution_clock>{high_resolution_clock::now()}}, name{new char[strlen(x)]{}} {
+    snprintf(name.get(), strlen(x), "%s", x);
 }
 
-TimerClass::TimerClass(const TimerClass &other) : timestamp{new timeval{}}, name{new char[strlen(other.name.get())]{}} {
+TimerClass::TimerClass(const TimerClass &other)
+    : timestamp{new time_point<high_resolution_clock>{other.timestamp.get()->time_since_epoch()}},
+      name{new char[strlen(other.name.get())]{}} {
     strncpy(name.get(), other.name.get(), strlen(other.name.get()));
-    timestamp->tv_sec = other.timestamp->tv_sec;
-    timestamp->tv_usec = other.timestamp->tv_usec;
 }
 
-TimerClass::TimerClass(TimerClass &&other) noexcept {
-    timestamp.reset(other.timestamp.get());
-    name.reset(other.name.get());
-    other.timestamp.reset();
-    other.name.reset();
-}
+TimerClass::TimerClass(TimerClass &&other) noexcept
+    : timestamp{std::move(other.timestamp)}, name{std::move(other.name)} {}
 
 TimerClass &TimerClass::operator=(const TimerClass &other) {
     if (this == &other) return *this;
-    timestamp.reset(other.timestamp.get());
+    timestamp = other.timestamp;
 
-    name.reset(other.name.get());
+    name = other.name;
 
     return *this;
 }
@@ -40,26 +33,26 @@ TimerClass &TimerClass::operator=(const TimerClass &other) {
 TimerClass &TimerClass::operator=(TimerClass &&other) noexcept {
     if (this == &other) return *this;
 
-    name.reset(other.name.get());
-    timestamp.reset(other.timestamp.get());
+    name = std::move(other.name);
+    timestamp = std::move(other.timestamp);
 
-    other.timestamp.reset();
-    other.timestamp.reset();
     return *this;
 }
 
 TimerClass::~TimerClass() {
-    scoped_ptr<timeval> currTime{new timeval{}};
-    gettimeofday(currTime.get(), NULL);
+    using namespace std::chrono;
+    using namespace std::literals::chrono_literals;
+    auto currTime = high_resolution_clock::now();
 
-    if (!(timestamp == nullptr)) {
-        if ((currTime->tv_usec - timestamp->tv_usec) == 0) {
+    if (timestamp != nullptr) {
+        auto duration = currTime - *timestamp;
+        if (duration_cast<seconds>(duration).count() <= 0) {
             cout << "(" << name.get() << ")"
-                 << " age: " << (currTime->tv_usec - timestamp->tv_usec) << " microseconds\n";
+                 << " age: " << duration_cast<microseconds>(duration) << "\n";
+
         } else {
             cout << "(" << name.get() << ")"
-                 << " age: " << (currTime->tv_sec - timestamp->tv_sec) << " seconds "
-                 << abs<__suseconds_t>(currTime->tv_usec - timestamp->tv_usec) << " microseconds\n";
+                 << " age: " << duration_cast<seconds>(duration) << "\n";
         }
     }
 }

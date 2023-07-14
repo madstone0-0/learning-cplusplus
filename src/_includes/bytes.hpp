@@ -9,6 +9,6 @@ namespace Bytes {
         string unit;
     };
 
-    Byte convert(const double, const string, const string);
+    Byte convert(const double, const string&, const string&);
 }  // namespace Bytes
 #endif
