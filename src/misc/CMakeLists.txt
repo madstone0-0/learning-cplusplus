@@ -12,5 +12,4 @@ add_executable(diagSum diagSum.cpp)
 add_executable(fast_inv_sqrt fast_inv_sqrt.cpp)
 add_executable(donut donut.cpp)
 add_executable(timer_test timer_test.cpp ${TIMER})
-# add_executable(imports imports.cpp)
-
+add_executable(utils_test utils_test.cpp)

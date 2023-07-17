@@ -1,21 +1,19 @@
 #include "timer.hpp"
 
-using std::strncpy, std::cout, std::chrono::high_resolution_clock, std::chrono::time_point;
+using std::cout, std::chrono::high_resolution_clock, std::chrono::time_point;
 
-template <typename T>
-constexpr T abs(T x) {
-    return x < 0 ? x * -1 : x;
-}
-
-TimerClass::TimerClass(const char *x)
-    : timestamp{new time_point<high_resolution_clock>{high_resolution_clock::now()}}, name{new char[strlen(x)]{}} {
-    snprintf(name.get(), strlen(x), "%s", x);
+TimerClass::TimerClass(const std::string &x)
+    : timestamp{new time_point<high_resolution_clock>{high_resolution_clock::now()}}, name{new std::string{}} {
+    // snprintf(name->c_str(), x.size(), "%s", x.c_str());
+    name->append(x.c_str());
 }
 
 TimerClass::TimerClass(const TimerClass &other)
     : timestamp{new time_point<high_resolution_clock>{other.timestamp.get()->time_since_epoch()}},
-      name{new char[strlen(other.name.get())]{}} {
-    strncpy(name.get(), other.name.get(), strlen(other.name.get()));
+      name{new std::string{}} {
+    // snprintf(name.get(), strlen(other.name.get()), "%s", other.name.get());
+    // other.name->copy(const_cast<char *>(name->c_str()), other.name->size());
+    name->append(other.name->c_str());
 }
 
 TimerClass::TimerClass(TimerClass &&other) noexcept
@@ -47,11 +45,11 @@ TimerClass::~TimerClass() {
     if (timestamp != nullptr) {
         auto duration = currTime - *timestamp;
         if (duration_cast<seconds>(duration).count() <= 0) {
-            cout << "(" << name.get() << ")"
+            cout << "(" << name.get()->c_str() << ")"
                  << " age: " << duration_cast<microseconds>(duration) << "\n";
 
         } else {
-            cout << "(" << name.get() << ")"
+            cout << "(" << name.get()->c_str() << ")"
                  << " age: " << duration_cast<seconds>(duration) << "\n";
         }
     }

@@ -1,26 +1,59 @@
 #ifndef ALGORITHMS_INCLUDE
 #define ALGORITHMS_INCLUDE
 
+#include <array>
 #include <cmath>
 #include <cstdlib>
+#include <memory>
+#include <optional>
+#include <utility>
 
-namespace Algorithms {
+#include "utils.hpp"
 
-    template <typename T, size_t n>
-    void bubble(T (&arr)[n]);
+namespace algorithms {
 
-    template <typename T, size_t n>
-    void insertion(T (&arr)[n]);
+    namespace sorting {
+        template <typename T, size_t n>
+        size_t bubble(T (&arr)[n]);
 
-    template <typename T, size_t n>
-    void merge(T (&arr)[n], size_t start, size_t end);
+        template <typename T, size_t n>
+        size_t insertion(T (&arr)[n]);
 
-    template <typename T, size_t n>
-    void shell(T (&arr)[n]);
-}  // namespace Algorithms
+        template <typename T, size_t n>
+        size_t merge(T (&arr)[n], size_t start, size_t end);
+
+        template <typename T, size_t n>
+        size_t merge(std::array<T, n>& arr, size_t start, size_t end);
+
+        template <typename T, size_t n>
+        size_t shell(T (&arr)[n]);
+
+        template <typename T, size_t n>
+        size_t shell(std::array<T, n>& arr);
+
+        template <typename T, size_t n>
+        size_t quicksort(T (&arr)[n], size_t low, size_t high);
+
+        template <typename T, size_t n>
+        size_t quicksort(std::array<T, n>& arr, size_t low, size_t high);
+
+    }  // namespace sorting
+
+    namespace searching {
+        template <typename T, size_t n>
+        std::pair<std::optional<size_t>, size_t> binary(const T (&arr)[n], const T& target);
+
+        template <typename T, size_t n>
+        std::pair<std::optional<size_t>, size_t> binary(const std::array<T, n>& arr, const T& target);
+
+    }  // namespace searching
+
+}  // namespace algorithms
+#endif
 
 template <typename T, size_t n>
-void Algorithms::bubble(T (&arr)[n]) {
+size_t algorithms::sorting::bubble(T (&arr)[n]) {
+    size_t numOfOpertations{0};
     size_t length = n - 1;
     for (auto i = length; i > 0; i--) {
         for (auto j = 0; j < i; j++) {
@@ -28,43 +61,56 @@ void Algorithms::bubble(T (&arr)[n]) {
                 T tmp = arr[j];
                 arr[j] = arr[j - 1];
                 arr[j - 1] = tmp;
+                numOfOpertations++;
             }
         }
     }
+    return numOfOpertations;
 }
 
 template <typename T, size_t n>
-void Algorithms::insertion(T (&arr)[n]) {
+size_t algorithms::sorting::insertion(T (&arr)[n]) {
+    size_t numOfOpertations{0};
     for (auto i = 1; i < n; i++) {
         size_t j = i - 1;
         T element_next = arr[i];
         while (arr[j] > element_next && j >= 0) {
             arr[j + 1] = arr[j];
             j--;
+            numOfOpertations++;
         }
         arr[j + 1] = element_next;
+        numOfOpertations++;
     }
+    return numOfOpertations;
 }
 
 template <typename T, size_t n>
-void Algorithms::merge(T (&arr)[n], size_t start, size_t end) {
+size_t algorithms::sorting::merge(T (&arr)[n], size_t start, size_t end) {
+    size_t numOfOpertations{0};
     if (start < end) {
         size_t mid = start + (end - start) / 2;
         merge(arr, start, mid);
         merge(arr, mid + 1, end);
 
+        numOfOpertations = 0;
+
         // Merge
         size_t len_left = mid - start + 1;
         size_t len_right = end - mid;
 
-        T left[len_left], right[len_right];
+        // T left[len_left]{}, right[len_right]{};
+        std::unique_ptr<T[]> left(new T[len_left]);
+        std::unique_ptr<T[]> right(new T[len_right]);
 
-        for (auto i = 0; i < len_left; i++) {
+        for (size_t i = 0; i < len_left; i++) {
             left[i] = arr[start + i];
+            numOfOpertations++;
         }
 
-        for (auto i = 0; i < len_right; i++) {
+        for (size_t i = 0; i < len_right; i++) {
             right[i] = arr[mid + 1 + i];
+            numOfOpertations++;
         }
 
         size_t a = 0;
@@ -75,9 +121,11 @@ void Algorithms::merge(T (&arr)[n], size_t start, size_t end) {
             if (left[a] < right[b]) {
                 arr[c] = left[a];
                 a++;
+                numOfOpertations++;
             } else {
                 arr[c] = right[b];
                 b++;
+                numOfOpertations++;
             }
             c++;
         }
@@ -86,18 +134,84 @@ void Algorithms::merge(T (&arr)[n], size_t start, size_t end) {
             arr[c] = left[a];
             a++;
             c++;
+            numOfOpertations++;
         }
 
         while (b < len_right) {
             arr[c] = right[b];
             b++;
             c++;
+            numOfOpertations++;
         }
     }
+    return numOfOpertations;
 }
 
 template <typename T, size_t n>
-void Algorithms::shell(T (&arr)[n]) {
+size_t algorithms::sorting::merge(std::array<T, n>& arr, size_t start, size_t end) {
+    size_t numOfOpertations{};
+    if (start < end) {
+        // size_t mid = start + (end - start) / 2;
+        // size_t mid = (start + end - 1) / 2;
+        size_t mid = std::floor((start + end) / 2);
+        merge(arr, start, mid);
+        merge(arr, mid + 1, end);
+
+        // Merging
+        size_t len_left = mid - start + 1;
+        size_t len_right = end - mid;
+
+        // T left[len_left]{}, right[len_right]{};
+        std::unique_ptr<T[]> left(new T[len_left]);
+        std::unique_ptr<T[]> right(new T[len_right]);
+
+        for (size_t i = 0; i < len_left; i++) {
+            left[i] = arr[start + i];
+            numOfOpertations++;
+        }
+
+        for (size_t i = 0; i < len_right; i++) {
+            right[i] = arr[mid + 1 + i];
+            numOfOpertations++;
+        }
+
+        size_t a = 0;
+        size_t b = 0;
+        size_t c = start;
+
+        while (a < len_left && b < len_right) {
+            if (left[a] < right[b]) {
+                arr[c] = left[a];
+                a++;
+                numOfOpertations++;
+            } else {
+                arr[c] = right[b];
+                b++;
+                numOfOpertations++;
+            }
+            c++;
+        }
+
+        while (a < len_left) {
+            arr[c] = left[a];
+            a++;
+            c++;
+            numOfOpertations++;
+        }
+
+        while (b < len_right) {
+            arr[c] = right[b];
+            b++;
+            c++;
+            numOfOpertations++;
+        }
+    }
+    return numOfOpertations;
+}
+
+template <typename T, size_t n>
+size_t algorithms::sorting::shell(T (&arr)[n]) {
+    size_t numOfOpertations{0};
     int distance = floor(n / 2);
     while (distance > 0) {
         for (auto i = distance; i < n; i++) {
@@ -105,12 +219,144 @@ void Algorithms::shell(T (&arr)[n]) {
             auto j = i;
             while (j >= distance && arr[j - distance] > tmp) {
                 arr[j] = arr[j - distance];
+                numOfOpertations++;
                 j -= distance;
             }
             arr[j] = tmp;
+            numOfOpertations++;
         }
         distance = floor(distance / 2);
     }
+    return numOfOpertations;
 }
 
-#endif
+template <typename T, size_t n>
+size_t algorithms::sorting::shell(std::array<T, n>& arr) {
+    size_t numOfOpertations{};
+    int distance = floor(n / 2);
+    while (distance > 0) {
+        for (auto i = distance; i < n; i++) {
+            auto tmp = arr.at(i);
+            auto j = i;
+            while (j >= distance && arr.at(j - distance) > tmp) {
+                arr.at(j) = arr.at(j - distance);
+                numOfOpertations++;
+                j -= distance;
+            }
+            arr.at(j) = tmp;
+            numOfOpertations++;
+        }
+        distance = floor(distance / 2);
+    }
+    return numOfOpertations;
+}
+
+template <typename T, size_t n>
+std::pair<std::optional<size_t>, size_t> algorithms::searching::binary(const std::array<T, n>& arr, const T& target) {
+    auto low = 0;
+    auto high = n - 1;
+    size_t numOfOpertations{};
+    size_t found{};
+
+    while (low <= high) {
+        auto mid = floor((high + low) / 2);
+        auto guess = arr[mid];
+
+        if (guess == target) {
+            found = mid;
+            numOfOpertations++;
+            return {found, numOfOpertations};
+        }
+
+        if (guess > target) {
+            high = mid - 1;
+            numOfOpertations++;
+        } else {
+            low = mid + 1;
+            numOfOpertations++;
+        }
+    }
+    return {std::nullopt, numOfOpertations};
+}
+
+template <typename T, size_t n>
+std::pair<std::optional<size_t>, size_t> algorithms::searching::binary(const T (&arr)[n], const T& target) {
+    size_t low = 0;
+    size_t high = n - 1;
+    size_t found{};
+    size_t numOfOpertations{};
+
+    while (low <= high) {
+        size_t mid = floor((high + low) / 2);
+        auto guess = arr[mid];
+
+        if (guess == target) {
+            found = mid;
+            numOfOpertations++;
+            return {found, numOfOpertations};
+        }
+
+        if (guess > target) {
+            high = mid - 1;
+            numOfOpertations++;
+        } else {
+            low = mid + 1;
+            numOfOpertations++;
+        }
+    }
+    return {std::nullopt, numOfOpertations};
+}
+
+template <typename T, size_t n>
+size_t algorithms::sorting::quicksort(T (&arr)[n], size_t low, size_t high) {
+    size_t numOfOpertations{};
+    if (n < 2) return numOfOpertations;
+    if (low >= high) return numOfOpertations;
+
+    T pivot{arr[high]};
+    long pivotIndex{static_cast<long>(low - 1)};
+    for (size_t i{low}; i <= high - 1; i++) {
+        if (arr[i] <= pivot) {
+            pivotIndex++;
+            // std::swap(arr[pivotIndex], arr[i]);
+            T tmp{arr[pivotIndex]};
+            arr[pivotIndex] = arr[i];
+            arr[i] = tmp;
+            numOfOpertations++;
+        }
+    }
+    pivotIndex++;
+    // std::swap(arr[pivotIndex], arr[high]);
+    T tmp{arr[pivotIndex]};
+    arr[pivotIndex] = arr[high];
+    arr[high] = tmp;
+    numOfOpertations++;
+
+    quicksort(arr, low, pivotIndex - 1);
+    quicksort(arr, pivotIndex + 1, high);
+    return numOfOpertations;
+}
+
+template <typename T, size_t n>
+size_t algorithms::sorting::quicksort(std::array<T, n>& arr, size_t low, size_t high) {
+    size_t numOfOpertations{};
+    if (n < 2) return numOfOpertations;
+    if (low >= high) return numOfOpertations;
+
+    T pivot{arr[high]};
+    long pivotIndex{static_cast<long>(low - 1)};
+    for (size_t i{low}; i <= high - 1; i++) {
+        if (arr[i] <= pivot) {
+            pivotIndex++;
+            std::swap(arr[pivotIndex], arr[i]);
+            numOfOpertations++;
+        }
+    }
+    pivotIndex++;
+    std::swap(arr[pivotIndex], arr[high]);
+    numOfOpertations++;
+
+    quicksort(arr, low, pivotIndex - 1);
+    quicksort(arr, pivotIndex + 1, high);
+    return numOfOpertations;
+}
