@@ -7,7 +7,7 @@ struct FibonacciIterator {
     int operator*() const;
 
    private:
-    int current{1};
+    int current{0};
     int last{1};
 };
 
