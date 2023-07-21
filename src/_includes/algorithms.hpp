@@ -7,6 +7,7 @@
 #include <memory>
 #include <optional>
 #include <utility>
+#include <vector>
 
 #include "utils.hpp"
 
@@ -35,7 +36,7 @@ namespace algorithms {
         size_t quicksort(T (&arr)[n], size_t low, size_t high);
 
         template <typename T, size_t n>
-        size_t quicksort(std::array<T, n>& arr, size_t low, size_t high);
+        size_t quicksort(std::array<T, n>& arr, int low, int high);
 
     }  // namespace sorting
 
@@ -99,7 +100,6 @@ size_t algorithms::sorting::merge(T (&arr)[n], size_t start, size_t end) {
         size_t len_left = mid - start + 1;
         size_t len_right = end - mid;
 
-        // T left[len_left]{}, right[len_right]{};
         std::unique_ptr<T[]> left(new T[len_left]);
         std::unique_ptr<T[]> right(new T[len_right]);
 
@@ -151,8 +151,6 @@ template <typename T, size_t n>
 size_t algorithms::sorting::merge(std::array<T, n>& arr, size_t start, size_t end) {
     size_t numOfOpertations{};
     if (start < end) {
-        // size_t mid = start + (end - start) / 2;
-        // size_t mid = (start + end - 1) / 2;
         size_t mid = std::floor((start + end) / 2);
         merge(arr, start, mid);
         merge(arr, mid + 1, end);
@@ -161,31 +159,20 @@ size_t algorithms::sorting::merge(std::array<T, n>& arr, size_t start, size_t en
         size_t len_left = mid - start + 1;
         size_t len_right = end - mid;
 
-        // T left[len_left]{}, right[len_right]{};
-        std::unique_ptr<T[]> left(new T[len_left]);
-        std::unique_ptr<T[]> right(new T[len_right]);
-
-        for (size_t i = 0; i < len_left; i++) {
-            left[i] = arr[start + i];
-            numOfOpertations++;
-        }
-
-        for (size_t i = 0; i < len_right; i++) {
-            right[i] = arr[mid + 1 + i];
-            numOfOpertations++;
-        }
+        std::vector<T> left{arr.begin() + start, arr.begin() + start + len_left};
+        std::vector<T> right{arr.begin() + mid + 1, arr.begin() + mid + 1 + len_right};
 
         size_t a = 0;
         size_t b = 0;
         size_t c = start;
 
         while (a < len_left && b < len_right) {
-            if (left[a] < right[b]) {
-                arr[c] = left[a];
+            if (left.at(a) < right.at(b)) {
+                arr.at(c) = left.at(a);
                 a++;
                 numOfOpertations++;
             } else {
-                arr[c] = right[b];
+                arr.at(c) = right.at(b);
                 b++;
                 numOfOpertations++;
             }
@@ -193,14 +180,14 @@ size_t algorithms::sorting::merge(std::array<T, n>& arr, size_t start, size_t en
         }
 
         while (a < len_left) {
-            arr[c] = left[a];
+            arr.at(c) = left.at(a);
             a++;
             c++;
             numOfOpertations++;
         }
 
         while (b < len_right) {
-            arr[c] = right[b];
+            arr.at(c) = right.at(b);
             b++;
             c++;
             numOfOpertations++;
@@ -318,7 +305,6 @@ size_t algorithms::sorting::quicksort(T (&arr)[n], size_t low, size_t high) {
     for (size_t i{low}; i <= high - 1; i++) {
         if (arr[i] <= pivot) {
             pivotIndex++;
-            // std::swap(arr[pivotIndex], arr[i]);
             T tmp{arr[pivotIndex]};
             arr[pivotIndex] = arr[i];
             arr[i] = tmp;
@@ -326,7 +312,6 @@ size_t algorithms::sorting::quicksort(T (&arr)[n], size_t low, size_t high) {
         }
     }
     pivotIndex++;
-    // std::swap(arr[pivotIndex], arr[high]);
     T tmp{arr[pivotIndex]};
     arr[pivotIndex] = arr[high];
     arr[high] = tmp;
@@ -338,14 +323,14 @@ size_t algorithms::sorting::quicksort(T (&arr)[n], size_t low, size_t high) {
 }
 
 template <typename T, size_t n>
-size_t algorithms::sorting::quicksort(std::array<T, n>& arr, size_t low, size_t high) {
+size_t algorithms::sorting::quicksort(std::array<T, n>& arr, int low, int high) {
     size_t numOfOpertations{};
     if (n < 2) return numOfOpertations;
     if (low >= high) return numOfOpertations;
 
-    T pivot{arr[high]};
-    long pivotIndex{static_cast<long>(low - 1)};
-    for (size_t i{low}; i <= high - 1; i++) {
+    T pivot = arr.at(high);
+    auto pivotIndex{static_cast<int>(low - 1)};
+    for (auto i{low}; i <= high - 1; i++) {
         if (arr[i] <= pivot) {
             pivotIndex++;
             std::swap(arr[pivotIndex], arr[i]);
@@ -356,7 +341,8 @@ size_t algorithms::sorting::quicksort(std::array<T, n>& arr, size_t low, size_t 
     std::swap(arr[pivotIndex], arr[high]);
     numOfOpertations++;
 
-    quicksort(arr, low, pivotIndex - 1);
+    quicksort(arr, low, static_cast<int>(pivotIndex - 1));
     quicksort(arr, pivotIndex + 1, high);
+
     return numOfOpertations;
 }
