@@ -5,3 +5,4 @@ CMakeFiles
 tags
 *.log
 .cmake
+.cache

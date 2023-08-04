@@ -7,10 +7,8 @@
 #include <map>
 #include <stdexcept>
 
-#include "utils.hpp"
-
 Bytes::Byte Bytes::convert(const double value, const string& unit, const string& toUnit) {
-    using Utils::getIndex, std::exp2, std::abs;
+    using std::exp2, std::abs;
     if (unit == toUnit) return {value, unit};
 
     const boost::container::flat_map<string, int> unitPowerMap{{"B", 0},   {"KB", 10}, {"MB", 20},

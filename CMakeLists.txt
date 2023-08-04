@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(CMAKE_CXX_FLAGS "-g -Wall -std=c++20 -fmodules-ts")
+set(CMAKE_CXX_FLAGS "-g -Wall -std=c++20 -fmodules-ts -fconcepts")
 include_directories("src/_includes")
 set(INCLUDE ${CMAKE_SOURCE_DIR}/src/_includes)
 set(TIMER ${INCLUDE}/timer.hpp ${INCLUDE}/timer.cpp)

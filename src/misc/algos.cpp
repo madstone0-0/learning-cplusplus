@@ -31,6 +31,7 @@ void resetArray(std::array<T, n>& origin, std::array<T, n>& working) {
 }
 
 int main() {
+    using std::less;
     using namespace algorithms;
 
     std::mt19937_64 mtEngine{69};
@@ -60,6 +61,7 @@ int main() {
     std::copy(std::begin(originalList), std::end(originalList), std::begin(workingList));
 
     printf("Dataset size: %zu\nFirst %zu elements:\n", arrayLength, maxShown);
+    printArray(workingList, maxShown);
     resetArray(originalList, workingList);
 
     // TimerClass* bubbleSort = new TimerClass("BubbleSort");
@@ -77,7 +79,7 @@ int main() {
 
     {
         TimerClass mergeSort{"MergeSort"};
-        numOfOps = sorting::merge(workingList, 0, workingList.size() - 1);
+        numOfOps = sorting::merge(workingList.begin(), workingList.end(), less());
     }
     printNumOfOps(numOfOps);
     printArray(workingList, maxShown);
@@ -85,7 +87,7 @@ int main() {
 
     {
         TimerClass shellSort{"ShellSort"};
-        numOfOps = sorting::shell(workingList);
+        numOfOps = sorting::shell(workingList.begin(), workingList.end(), less());
     }
     printNumOfOps(numOfOps);
     printArray(workingList, maxShown);
@@ -93,7 +95,7 @@ int main() {
 
     {
         TimerClass quickSort{"QuickSort"};
-        numOfOps = sorting::quicksort(workingList, 0, workingList.size() - 1);
+        numOfOps = sorting::quicksort(workingList.begin(), workingList.end(), less());
     }
     printNumOfOps(numOfOps);
     printArray(workingList, maxShown);
@@ -101,7 +103,7 @@ int main() {
 
     std::optional<size_t> res{};
     {
-        sorting::quicksort(workingList, 0, workingList.size() - 1);
+        sorting::quicksort(workingList.begin(), workingList.end(), std::less<int>());
         TimerClass binarySearch{"BinarySearch"};
         auto [result, ops] = searching::binary(workingList, 5032);
         res = result;

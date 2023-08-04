@@ -1,42 +1,62 @@
 #ifndef ALGORITHMS_INCLUDE
 #define ALGORITHMS_INCLUDE
 
+#include <algorithm>
 #include <array>
 #include <cmath>
+#include <concepts>
 #include <cstdlib>
+#include <iterator>
 #include <memory>
 #include <optional>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
 #include "utils.hpp"
 
+template <typename T>
+concept Iterable = requires(T a, T b) {
+    std::is_default_constructible<T>::value;
+    *(a);
+    a++;
+    a[0];
+};
+
 namespace algorithms {
 
     namespace sorting {
-        template <typename T, size_t n>
-        size_t bubble(T (&arr)[n]);
+        using std::next, std::advance, std::distance, std::prev;
 
-        template <typename T, size_t n>
-        size_t insertion(T (&arr)[n]);
+        template <typename T, size_t n, typename Compare>
+        size_t bubble(T (&arr)[n], Compare compare);
 
-        template <typename T, size_t n>
-        size_t merge(T (&arr)[n], size_t start, size_t end);
+        template <Iterable Itr, typename Compare = std::less<>>
+        size_t bubble(Itr begin, Itr end, Compare compare);
 
-        template <typename T, size_t n>
-        size_t merge(std::array<T, n>& arr, size_t start, size_t end);
+        template <typename T, size_t n, typename Compare>
+        size_t insertion(T (&arr)[n], Compare compare);
 
-        template <typename T, size_t n>
-        size_t shell(T (&arr)[n]);
+        template <Iterable Itr, typename Compare = std::less<>>
+        size_t insertion(Itr begin, Itr end, Compare compare);
 
-        template <typename T, size_t n>
-        size_t shell(std::array<T, n>& arr);
+        template <typename T, size_t n, typename Compare>
+        size_t merge(T (&arr)[n], size_t start, size_t end, Compare compare);
 
-        template <typename T, size_t n>
-        size_t quicksort(T (&arr)[n], size_t low, size_t high);
+        template <Iterable Itr, typename Compare = std::less<>>
+        size_t merge(Itr begin, Itr end, Compare compare);
 
-        template <typename T, size_t n>
-        size_t quicksort(std::array<T, n>& arr, int low, int high);
+        template <typename T, size_t n, typename Compare>
+        size_t shell(T (&arr)[n], Compare compare);
+
+        template <Iterable Itr, typename Compare = std::less<>>
+        size_t shell(Itr begin, Itr end, Compare compare);
+
+        template <typename T, size_t n, typename Compare>
+        size_t quicksort(T (&arr)[n], size_t low, size_t high, Compare compare);
+
+        template <Iterable Itr, typename Compare = std::less<>>
+        size_t quicksort(Itr begin, Itr end, Compare compare);
 
     }  // namespace sorting
 
@@ -52,16 +72,14 @@ namespace algorithms {
 }  // namespace algorithms
 #endif
 
-template <typename T, size_t n>
-size_t algorithms::sorting::bubble(T (&arr)[n]) {
-    size_t numOfOpertations{0};
+template <typename T, size_t n, typename Compare>
+size_t algorithms::sorting::bubble(T (&arr)[n], Compare compare) {
+    size_t numOfOpertations{};
     size_t length = n - 1;
-    for (auto i = length; i > 0; i--) {
+    for (int i = length; i >= 0; i--) {
         for (auto j = 0; j < i; j++) {
-            if (arr[j - 1] > arr[j]) {
-                T tmp = arr[j];
-                arr[j] = arr[j - 1];
-                arr[j - 1] = tmp;
+            if (compare(arr[j + 1], arr[j])) {
+                std::swap(arr[j], arr[j + 1]);
                 numOfOpertations++;
             }
         }
@@ -69,13 +87,27 @@ size_t algorithms::sorting::bubble(T (&arr)[n]) {
     return numOfOpertations;
 }
 
-template <typename T, size_t n>
-size_t algorithms::sorting::insertion(T (&arr)[n]) {
-    size_t numOfOpertations{0};
+template <Iterable Itr, typename Compare>
+size_t algorithms::sorting::bubble(Itr begin, Itr end, Compare compare) {
+    size_t numOfOpertations{};
+    for (auto i = begin; i != end; i++) {
+        for (auto j = i + 1; j != end; j++) {
+            if (compare(*j, *i)) {
+                std::iter_swap(j, i);
+                numOfOpertations++;
+            }
+        }
+    }
+    return numOfOpertations++;
+}
+
+template <typename T, size_t n, typename Compare>
+size_t algorithms::sorting::insertion(T (&arr)[n], Compare compare) {
+    size_t numOfOpertations{};
     for (auto i = 1; i < n; i++) {
-        size_t j = i - 1;
+        int j = i - 1;
         T element_next = arr[i];
-        while (arr[j] > element_next && j >= 0) {
+        while (compare(element_next, arr[j]) && j >= 0) {
             arr[j + 1] = arr[j];
             j--;
             numOfOpertations++;
@@ -86,13 +118,41 @@ size_t algorithms::sorting::insertion(T (&arr)[n]) {
     return numOfOpertations;
 }
 
-template <typename T, size_t n>
-size_t algorithms::sorting::merge(T (&arr)[n], size_t start, size_t end) {
+template <Iterable Itr, typename Compare>
+size_t algorithms::sorting::insertion(Itr begin, Itr end, Compare compare) {
+    size_t numOfOpertations{};
+    // for (auto i = next(begin); i != end; i++) {
+    //     auto elementNext = *i;
+    //     auto j = prev(i);
+    //     while (compare(elementNext, *j) && j != begin) {
+    //         *(next(j)) = *j;
+    //         advance(j, -1);
+    //         numOfOpertations++;
+    //         // if (j != begin) {
+    //         //     j--;
+    //         //     numOfOpertations++;
+    //         // } else
+    //         //     break;
+    //     }
+    //     *(next(j)) = elementNext;
+    //     numOfOpertations++;
+    // }
+
+    for (auto i = begin; i != end; i++) {
+        std::rotate(std::upper_bound(begin, i, *i), i, i + 1);
+        numOfOpertations++;
+    }
+
+    return numOfOpertations;
+}
+
+template <typename T, size_t n, typename Compare>
+size_t algorithms::sorting::merge(T (&arr)[n], size_t start, size_t end, Compare compare) {
     size_t numOfOpertations{0};
     if (start < end) {
         size_t mid = start + (end - start) / 2;
-        merge(arr, start, mid);
-        merge(arr, mid + 1, end);
+        merge(arr, start, mid, compare);
+        merge(arr, mid + 1, end, compare);
 
         numOfOpertations = 0;
 
@@ -118,7 +178,7 @@ size_t algorithms::sorting::merge(T (&arr)[n], size_t start, size_t end) {
         size_t c = start;
 
         while (a < len_left && b < len_right) {
-            if (left[a] < right[b]) {
+            if (compare(left[a], right[b])) {
                 arr[c] = left[a];
                 a++;
                 numOfOpertations++;
@@ -147,64 +207,68 @@ size_t algorithms::sorting::merge(T (&arr)[n], size_t start, size_t end) {
     return numOfOpertations;
 }
 
-template <typename T, size_t n>
-size_t algorithms::sorting::merge(std::array<T, n>& arr, size_t start, size_t end) {
+template <Iterable Itr, typename Compare>
+size_t algorithms::sorting::merge(Itr begin, Itr end, Compare compare) {
     size_t numOfOpertations{};
-    if (start < end) {
-        size_t mid = std::floor((start + end) / 2);
-        merge(arr, start, mid);
-        merge(arr, mid + 1, end);
+    const auto size = distance(begin, end);
 
-        // Merging
-        size_t len_left = mid - start + 1;
-        size_t len_right = end - mid;
+    if (size <= 1) return numOfOpertations;
 
-        std::vector<T> left{arr.begin() + start, arr.begin() + start + len_left};
-        std::vector<T> right{arr.begin() + mid + 1, arr.begin() + mid + 1 + len_right};
+    auto mid = next(begin, size / 2);
+    merge(begin, mid, compare);
+    merge(mid, end, compare);
 
-        size_t a = 0;
-        size_t b = 0;
-        size_t c = start;
+    auto len_left = distance(begin, mid);
+    auto len_right = distance(next(mid), end);
+    auto left_end = next(begin, len_left);
+    auto right_end = next(next(mid), len_right);
 
-        while (a < len_left && b < len_right) {
-            if (left.at(a) < right.at(b)) {
-                arr.at(c) = left.at(a);
-                a++;
-                numOfOpertations++;
-            } else {
-                arr.at(c) = right.at(b);
-                b++;
-                numOfOpertations++;
-            }
-            c++;
-        }
+    using iter_type = typename std::iterator_traits<Itr>::value_type;
+    std::vector<iter_type> left{begin, left_end};
+    std::vector<iter_type> right{mid, right_end};
 
-        while (a < len_left) {
-            arr.at(c) = left.at(a);
-            a++;
-            c++;
+    auto leftItr = left.begin();
+    auto rightItr = right.begin();
+    auto arrItr = begin;
+
+    while (leftItr != left.end() && rightItr != right.end()) {
+        if (compare(*leftItr, *rightItr)) {
+            *arrItr = *leftItr;
+            advance(leftItr, 1);
+            numOfOpertations++;
+        } else {
+            *arrItr = *rightItr;
+            advance(rightItr, 1);
             numOfOpertations++;
         }
+        advance(arrItr, 1);
+    }
 
-        while (b < len_right) {
-            arr.at(c) = right.at(b);
-            b++;
-            c++;
-            numOfOpertations++;
-        }
+    while (leftItr != left.end()) {
+        *arrItr = *leftItr;
+        advance(leftItr, 1);
+        advance(arrItr, 1);
+        numOfOpertations++;
+    }
+
+    while (rightItr != right.end()) {
+        *arrItr = *rightItr;
+        advance(rightItr, 1);
+        advance(arrItr, 1);
+        numOfOpertations++;
     }
     return numOfOpertations;
 }
 
-template <typename T, size_t n>
-size_t algorithms::sorting::shell(T (&arr)[n]) {
+template <typename T, size_t n, typename Compare>
+size_t algorithms::sorting::shell(T (&arr)[n], Compare compare) {
     size_t numOfOpertations{0};
     int distance = floor(n / 2);
     while (distance > 0) {
         for (auto i = distance; i < n; i++) {
             auto tmp = arr[i];
             auto j = i;
-            while (j >= distance && arr[j - distance] > tmp) {
+            while (j >= distance && compare(tmp, arr[j - distance])) {
                 arr[j] = arr[j - distance];
                 numOfOpertations++;
                 j -= distance;
@@ -217,23 +281,21 @@ size_t algorithms::sorting::shell(T (&arr)[n]) {
     return numOfOpertations;
 }
 
-template <typename T, size_t n>
-size_t algorithms::sorting::shell(std::array<T, n>& arr) {
+template <Iterable Itr, typename Compare>
+size_t algorithms::sorting::shell(Itr begin, Itr end, Compare compare) {
     size_t numOfOpertations{};
-    int distance = floor(n / 2);
-    while (distance > 0) {
-        for (auto i = distance; i < n; i++) {
-            auto tmp = arr.at(i);
-            auto j = i;
-            while (j >= distance && arr.at(j - distance) > tmp) {
-                arr.at(j) = arr.at(j - distance);
+    auto size = distance(begin, end);
+    auto h = 1;
+    while (h < size / 3) h = 3 * h + 1;
+    while (h >= 1) {
+        for (auto i = begin + h; i != end; i++) {
+            for (auto j = i; (j - begin) >= h && compare(*j, *(j - h)); j -= h) {
                 numOfOpertations++;
-                j -= distance;
+                std::iter_swap(j, j - h);
             }
-            arr.at(j) = tmp;
-            numOfOpertations++;
         }
-        distance = floor(distance / 2);
+        h /= 3;
+        numOfOpertations++;
     }
     return numOfOpertations;
 }
@@ -246,7 +308,7 @@ std::pair<std::optional<size_t>, size_t> algorithms::searching::binary(const std
     size_t found{};
 
     while (low <= high) {
-        auto mid = floor((high + low) / 2);
+        auto mid = std::floor((high + low) / 2);
         auto guess = arr[mid];
 
         if (guess == target) {
@@ -294,8 +356,8 @@ std::pair<std::optional<size_t>, size_t> algorithms::searching::binary(const T (
     return {std::nullopt, numOfOpertations};
 }
 
-template <typename T, size_t n>
-size_t algorithms::sorting::quicksort(T (&arr)[n], size_t low, size_t high) {
+template <typename T, size_t n, typename Compare>
+size_t algorithms::sorting::quicksort(T (&arr)[n], size_t low, size_t high, Compare compare) {
     size_t numOfOpertations{};
     if (n < 2) return numOfOpertations;
     if (low >= high) return numOfOpertations;
@@ -303,7 +365,8 @@ size_t algorithms::sorting::quicksort(T (&arr)[n], size_t low, size_t high) {
     T pivot{arr[high]};
     long pivotIndex{static_cast<long>(low - 1)};
     for (size_t i{low}; i <= high - 1; i++) {
-        if (arr[i] <= pivot) {
+        // if (arr[i] <= pivot) {
+        if (compare(arr[i], pivot)) {
             pivotIndex++;
             T tmp{arr[pivotIndex]};
             arr[pivotIndex] = arr[i];
@@ -317,32 +380,30 @@ size_t algorithms::sorting::quicksort(T (&arr)[n], size_t low, size_t high) {
     arr[high] = tmp;
     numOfOpertations++;
 
-    quicksort(arr, low, pivotIndex - 1);
-    quicksort(arr, pivotIndex + 1, high);
+    quicksort(arr, low, pivotIndex - 1, compare);
+    quicksort(arr, pivotIndex + 1, high, compare);
     return numOfOpertations;
 }
 
-template <typename T, size_t n>
-size_t algorithms::sorting::quicksort(std::array<T, n>& arr, int low, int high) {
+template <Iterable Itr, typename Compare>
+size_t algorithms::sorting::quicksort(Itr begin, Itr end, Compare compare) {
     size_t numOfOpertations{};
-    if (n < 2) return numOfOpertations;
-    if (low >= high) return numOfOpertations;
+    if (distance(begin, end) < 1) return numOfOpertations;
 
-    T pivot = arr.at(high);
-    auto pivotIndex{static_cast<int>(low - 1)};
-    for (auto i{low}; i <= high - 1; i++) {
-        if (arr[i] <= pivot) {
-            pivotIndex++;
-            std::swap(arr[pivotIndex], arr[i]);
+    auto pivot = prev(end);
+    auto pivotItr = begin;
+
+    for (auto j = begin; j != pivot; ++j) {
+        if (compare(*j, *pivot)) {
+            std::iter_swap(pivotItr++, j);
             numOfOpertations++;
         }
     }
-    pivotIndex++;
-    std::swap(arr[pivotIndex], arr[high]);
+    std::iter_swap(pivotItr, pivot);
     numOfOpertations++;
 
-    quicksort(arr, low, static_cast<int>(pivotIndex - 1));
-    quicksort(arr, pivotIndex + 1, high);
+    quicksort(begin, pivotItr, compare);
+    quicksort(next(pivotItr), end, compare);
 
     return numOfOpertations;
 }

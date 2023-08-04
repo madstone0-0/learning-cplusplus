@@ -1,8 +1,9 @@
 #include <algorithm>
+#include <boost/algorithm/string/case_conv.hpp>
 #include <iostream>
 
 #include "bytes.hpp"
-using std::cout, std::string;
+using std::cout, std::string, boost::to_upper;
 
 int main(int argc, char* argv[]) {
     using namespace Bytes;
@@ -14,21 +15,23 @@ int main(int argc, char* argv[]) {
     if (argc == 1) {
         cout << "No arguments provided\n";
         return 1;
-    } else if (argc != 4) {
+    }
+
+    if (argc != 4) {
         cout << "Invalid number of arguments\n";
         return 1;
-    } else {
-        try {
-            value = std::stol(argv[1]);
-        } catch (const std::exception& e) {
-            printf("Exception: %s\n", e.what());
-            return 1;
-        }
-        unit = argv[2];
-        toUnit = argv[3];
-        std::transform(unit.begin(), unit.end(), unit.begin(), ::toupper);
-        std::transform(toUnit.begin(), toUnit.end(), toUnit.begin(), ::toupper);
     }
+
+    try {
+        value = std::stol(argv[1]);
+    } catch (const std::exception& e) {
+        printf("Exception: %s\n", e.what());
+        return 1;
+    }
+    unit = argv[2];
+    toUnit = argv[3];
+    to_upper(unit);
+    to_upper(toUnit);
 
     try {
         Byte result = convert(value, unit, toUnit);
