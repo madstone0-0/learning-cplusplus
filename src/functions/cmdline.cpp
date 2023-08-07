@@ -1,6 +1,9 @@
 #include <cstdint>
 #include <cstdio>
 
+#ifndef CMDLINE
+#define CMDLINE
+
 /* main Functions and the Command Line */
 
 // int main(int argc, char** argv) {
@@ -61,3 +64,4 @@ void AlphaHistogram::print() const {
 }
 
 /* Histogram */
+#endif
