@@ -1,11 +1,11 @@
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
+
+#include <catch2/catch_all.hpp>
 #include <stdexcept>
 
 #include "car.cpp"
 #include "mock_og.cpp"
 
-using namespace Catch::Detail;
+using namespace Catch;
 
 TEST_CASE("AutoBrake") {
     MockServiceBus bus{};

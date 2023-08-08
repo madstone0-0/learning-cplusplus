@@ -13,3 +13,7 @@ add_executable(autobrake autobrake.cpp)
 add_executable(caps caps.cpp)
 add_executable(fileinfo fileinfo.cpp)
 # add_executable(fileinfo_boost fileinfo_boost.cpp)
+
+target_link_libraries(file PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(streams PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(string PRIVATE Catch2::Catch2WithMain)

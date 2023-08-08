@@ -15,3 +15,9 @@ add_executable(timer_test timer_test.cpp ${TIMER})
 add_executable(utils_test utils_test.cpp)
 add_executable(algos_test algos_test.cpp ${INCLUDE}/algorithms.hpp ${TIMER})
 add_executable(dorg dorg.cpp)
+
+
+target_link_libraries(algos_test PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(bytes_test PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(timer_test PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(utils_test PRIVATE Catch2::Catch2WithMain)

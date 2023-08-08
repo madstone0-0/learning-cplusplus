@@ -1,6 +1,6 @@
-#define CATCH_CONFIG_MAIN
+
 #include <boost/date_time/gregorian/gregorian.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <chrono>
 #include <iostream>
 #include <thread>

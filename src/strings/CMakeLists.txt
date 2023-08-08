@@ -9,3 +9,9 @@ add_executable(boost boost.cpp)
 add_executable(histogram histogram.cpp)
 add_executable(palindrome palindrome.cpp)
 add_executable(vowels vowels.cpp)
+
+
+target_link_libraries(boost PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(regex PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(std_string PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(string_view PRIVATE Catch2::Catch2WithMain)

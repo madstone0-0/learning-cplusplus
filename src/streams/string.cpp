@@ -1,10 +1,11 @@
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
+
+#include <catch2/catch_all.hpp>
 #include <iostream>
 #include <string>
 
 /* Output */
 
+using namespace Catch;
 #include <sstream>
 TEST_CASE("ostringstream produces strings with str") {
     std::ostringstream ss;

@@ -1,7 +1,7 @@
-#define CATCH_CONFIG_MAIN
+
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/predicate.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <string>
 
 /* Boost Range */

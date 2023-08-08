@@ -1,12 +1,24 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(Learning LANGUAGES CXX)
+project(Learning LANGUAGES CXX VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(CMAKE_CXX_FLAGS "-g3 -Os -fno-ident -Wall -std=c++20 -fmodules-ts -fconcepts")
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+endif()
+
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++20 -fmodules-ts -fconcepts")
+set(CMAKE_CXX_FLAGS_DEBUG "-g3 -Os")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Os -fno-ident")
+# add_compile_options(
+# "-Wall" "-Wextra" "-std=c++20" "-fmodules-ts" "-fconcepts"
+# "$<$<CONFIG:DEBUG>: -g3;-ggdb;-Os>"
+# "$<$<CONFIG:RELEASE>: -O3;-Os;-fno-ident>"
+#     )
 include_directories("src/_includes")
 set(INCLUDE ${CMAKE_SOURCE_DIR}/src/_includes)
 set(TIMER ${INCLUDE}/timer.hpp ${INCLUDE}/timer.cpp)
@@ -17,8 +29,7 @@ set(BYTE_HEADERS ${INCLUDE}/bytes.hpp ${INCLUDE}/bytes.cpp)
 #################
 # Catch2        #
 #################
-find_package(Catch2 REQUIRED)
-
+find_package(Catch2 3 REQUIRED)
 
 
 #################

@@ -1,15 +1,15 @@
-#define CATCH_CONFIG_MAIN
+
 #include <boost/math/constants/constants.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/numeric/conversion/converter.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <cmath>
 #include <complex>
 #include <limits>
 #include <random>
 
 /* Complex Numbers */
-using Catch::Detail::Approx;
+using namespace Catch;
 
 TEST_CASE("std::complex has a real and imaginary component") {
     std::complex<double> a{0.5, 14.13};

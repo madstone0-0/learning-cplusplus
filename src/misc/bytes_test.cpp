@@ -1,11 +1,11 @@
-#define CATCH_CONFIG_MAIN
+
 #include "bytes.hpp"
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("ConvertBytes") {
     using namespace Bytes;
-    using Catch::Detail::Approx;
+    using namespace Catch;
 
     SECTION("Converts bytes to kilobytes") {
         auto result = convert(1024, "B", "KB");

@@ -8,3 +8,10 @@ add_executable(aux aux.cpp)
 add_executable(prev prev.cpp)
 add_executable(sumItr sumItr.cpp)
 add_executable(perf perf.cpp ${TIMER})
+
+
+target_link_libraries(aux PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(input PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(output PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(prev PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(sumItr PRIVATE Catch2::Catch2WithMain)

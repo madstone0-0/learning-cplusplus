@@ -1,13 +1,14 @@
-#define CATCH_CONFIG_MAIN
+
 #include <any>
 #include <boost/logic/tribool.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <optional>
 #include <tuple>
 #include <utility>
 #include <variant>
 
 /* Tribool */
+using namespace Catch;
 using boost::logic::indeterminate;
 boost::logic::tribool t = true, f = false, i = indeterminate;
 TEST_CASE("Boost tribool converts to bool") {
@@ -156,7 +157,7 @@ TEST_CASE("std::variant") {
     REQUIRE_THROWS_AS(std::get<0>(hagunemnon), std::bad_variant_access);
 
     auto lbs = std::visit([](auto& x) { return 2.2 * x.weightKG; }, hagunemnon);
-    REQUIRE(lbs == Catch::Detail::Approx(1760));
+    REQUIRE(lbs == Approx(1760));
 }
 
 /* Variant */

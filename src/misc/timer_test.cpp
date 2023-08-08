@@ -1,7 +1,7 @@
-#define CATCH_CONFIG_MAIN
+
 #include "timer.hpp"
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("Timer") {
     auto timer1 = TimerClass{"Timer1"};

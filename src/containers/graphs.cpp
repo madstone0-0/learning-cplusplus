@@ -1,8 +1,8 @@
-#define CATCH_CONFIG_MAIN
+
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <set>
 
 /* std::Adjacency_List */

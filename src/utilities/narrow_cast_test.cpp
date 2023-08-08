@@ -1,7 +1,7 @@
-#define CATCH_CONFIG_MAIN
+
 #include "narrow_cast.cpp"
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <limits>
 
 TEST_CASE("narrow_cast returns normally") {

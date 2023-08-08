@@ -1,7 +1,7 @@
-#define CATCH_CONFIG_MAIN
+
 #include <boost/smart_ptr/scoped_array.hpp>
 #include <boost/smart_ptr/scoped_ptr.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include "dead_men.cpp"
 

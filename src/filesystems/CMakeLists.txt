@@ -10,3 +10,7 @@ add_executable(treedir treedir.cpp ${BYTE_HEADERS})
 add_executable(magic magic.cpp)
 add_executable(search search.cpp)
 add_executable(ls ls.cpp)
+
+target_link_libraries(dirs PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(filesystems PRIVATE Catch2::Catch2WithMain)
+

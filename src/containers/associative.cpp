@@ -1,5 +1,5 @@
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
+
+#include <catch2/catch_all.hpp>
 #include <functional>
 #include <map>
 #include <set>
@@ -7,6 +7,7 @@
 
 /* std::Set */
 
+using Catch::Approx;
 using std::set;
 TEST_CASE("std::set supports") {
     set<int> emp;

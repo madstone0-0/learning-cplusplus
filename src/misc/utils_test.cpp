@@ -1,8 +1,8 @@
-#define CATCH_CONFIG_MAIN
+
 #include "utils.hpp"
 
 #include <array>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <exception>
 
 using std::array, Utils::sliceArray;

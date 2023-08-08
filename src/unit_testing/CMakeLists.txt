@@ -14,6 +14,9 @@ googletest_add_test(signs_test signs_test.cpp)
 
 enable_testing()
 
+
+target_link_libraries(car_test_catch PRIVATE Catch2::Catch2WithMain)
+
 include(GoogleTest)
 gtest_discover_tests(car_test_google)
 gtest_discover_tests(car_test_google_mock)

@@ -1,10 +1,11 @@
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
+
+#include <catch2/catch_all.hpp>
 #include <string>
 
 /* Constructing */
 
 using std::string;
+using namespace Catch;
 TEST_CASE("std::string supports constructing") {
     SECTION("Empty strings") {
         string cheese;
