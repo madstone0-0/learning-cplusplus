@@ -45,11 +45,11 @@ TimerClass::~TimerClass() {
     if (timestamp != nullptr) {
         auto duration = currTime - *timestamp;
         if (duration_cast<seconds>(duration).count() <= 0) {
-            cout << "(" << name.get()->c_str() << ")"
+            cout << "(" << *(name.get()) << ")"
                  << " age: " << duration_cast<microseconds>(duration) << "\n";
 
         } else {
-            cout << "(" << name.get()->c_str() << ")"
+            cout << "(" << *(name.get()) << ")"
                  << " age: " << duration_cast<seconds>(duration) << "\n";
         }
     }

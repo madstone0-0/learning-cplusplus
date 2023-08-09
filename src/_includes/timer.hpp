@@ -19,10 +19,7 @@ struct TimerClass {
     TimerClass &operator=(TimerClass &&other) noexcept;
     ~TimerClass();
 
-    // std::shared_ptr<std::chrono::time_point<std::chrono::high_resolution_clock>> timestamp =
-    //     std::make_shared<std::chrono::time_point<std::chrono::high_resolution_clock>>();
     std::shared_ptr<std::chrono::time_point<std::chrono::high_resolution_clock>> timestamp{};
-    // std::shared_ptr<char[]> name{};
     std::shared_ptr<std::string> name{};
 };
 

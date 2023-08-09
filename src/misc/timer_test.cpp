@@ -1,7 +1,7 @@
 
 #include "timer.hpp"
 
-#include <catch2/catch_all.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("Timer") {
     auto timer1 = TimerClass{"Timer1"};
@@ -11,7 +11,7 @@ TEST_CASE("Timer") {
 
     SECTION("Copy Constructor") {
         TimerClass test1{timer1};
-        // REQUIRE(test1.name == timer1.name);
+        REQUIRE(*(test1.name) == *(timer1.name));
         REQUIRE(test1.timestamp->time_since_epoch() == timer1.timestamp->time_since_epoch());
 
         TimerClass test2{timer2};
@@ -22,7 +22,7 @@ TEST_CASE("Timer") {
         auto name = "test1";
         TimerClass test1{name};
 
-        // REQUIRE(test1.name.get() == name);
+        REQUIRE(*(test1.name.get()) == name);
 
         test1 = timer3;
         REQUIRE(test1.name == timer3.name);
@@ -32,7 +32,7 @@ TEST_CASE("Timer") {
     SECTION("Move Constructor") {
         TimerClass test1{std::move(timer4)};
         auto name = "Timer4";
-        // REQUIRE(test1.name.get() == name);
+        REQUIRE(*(test1.name.get()) == name);
 
         REQUIRE(timer4.name.get() == nullptr);
         REQUIRE(timer4.timestamp.get() == nullptr);

@@ -12,7 +12,7 @@ endif()
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++20 -fmodules-ts -fconcepts")
-set(CMAKE_CXX_FLAGS_DEBUG "-g3 -Os")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Os -fno-ident")
 # add_compile_options(
 # "-Wall" "-Wextra" "-std=c++20" "-fmodules-ts" "-fconcepts"

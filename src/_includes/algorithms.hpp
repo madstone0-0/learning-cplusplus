@@ -13,49 +13,43 @@
 #include <utility>
 #include <vector>
 
+#include "concepts.hpp"
 #include "utils.hpp"
-
-template <typename T>
-concept Iterable = requires(T a, T b) {
-    std::is_default_constructible<T>::value;
-    *(a);
-    a++;
-    a[0];
-};
 
 namespace algorithms {
 
+    using std::next, std::advance, std::distance, std::prev;
+    using namespace mts::concepts;
     namespace sorting {
-        using std::next, std::advance, std::distance, std::prev;
 
         template <typename T, size_t n, typename Compare>
         size_t bubble(T (&arr)[n], Compare compare);
 
-        template <Iterable Itr, typename Compare = std::less<>>
+        template <Traversable Itr, typename Compare = std::less<>>
         size_t bubble(Itr begin, Itr end, Compare compare);
 
         template <typename T, size_t n, typename Compare>
         size_t insertion(T (&arr)[n], Compare compare);
 
-        template <Iterable Itr, typename Compare = std::less<>>
+        template <Traversable Itr, typename Compare = std::less<>>
         size_t insertion(Itr begin, Itr end, Compare compare);
 
         template <typename T, size_t n, typename Compare>
         size_t merge(T (&arr)[n], size_t start, size_t end, Compare compare);
 
-        template <Iterable Itr, typename Compare = std::less<>>
+        template <Traversable Itr, typename Compare = std::less<>>
         size_t merge(Itr begin, Itr end, Compare compare);
 
         template <typename T, size_t n, typename Compare>
         size_t shell(T (&arr)[n], Compare compare);
 
-        template <Iterable Itr, typename Compare = std::less<>>
+        template <Traversable Itr, typename Compare = std::less<>>
         size_t shell(Itr begin, Itr end, Compare compare);
 
         template <typename T, size_t n, typename Compare>
         size_t quicksort(T (&arr)[n], size_t low, size_t high, Compare compare);
 
-        template <Iterable Itr, typename Compare = std::less<>>
+        template <Traversable Itr, typename Compare = std::less<>>
         size_t quicksort(Itr begin, Itr end, Compare compare);
 
     }  // namespace sorting
@@ -67,10 +61,15 @@ namespace algorithms {
         template <typename T, size_t n>
         std::pair<std::optional<size_t>, size_t> binary(const std::array<T, n>& arr, const T& target);
 
+        template <Traversable Itr>
+        std::pair<Itr, size_t> binary(Itr begin, Itr end, const std::iter_value_t<Itr>& target);
+
     }  // namespace searching
 
 }  // namespace algorithms
 #endif
+
+using namespace mts::concepts;
 
 template <typename T, size_t n, typename Compare>
 size_t algorithms::sorting::bubble(T (&arr)[n], Compare compare) {
@@ -87,7 +86,7 @@ size_t algorithms::sorting::bubble(T (&arr)[n], Compare compare) {
     return numOfOpertations;
 }
 
-template <Iterable Itr, typename Compare>
+template <Traversable Itr, typename Compare>
 size_t algorithms::sorting::bubble(Itr begin, Itr end, Compare compare) {
     size_t numOfOpertations{};
     for (auto i = begin; i != end; i++) {
@@ -118,7 +117,7 @@ size_t algorithms::sorting::insertion(T (&arr)[n], Compare compare) {
     return numOfOpertations;
 }
 
-template <Iterable Itr, typename Compare>
+template <Traversable Itr, typename Compare>
 size_t algorithms::sorting::insertion(Itr begin, Itr end, Compare compare) {
     size_t numOfOpertations{};
     // for (auto i = next(begin); i != end; i++) {
@@ -207,7 +206,7 @@ size_t algorithms::sorting::merge(T (&arr)[n], size_t start, size_t end, Compare
     return numOfOpertations;
 }
 
-template <Iterable Itr, typename Compare>
+template <Traversable Itr, typename Compare>
 size_t algorithms::sorting::merge(Itr begin, Itr end, Compare compare) {
     size_t numOfOpertations{};
     const auto size = distance(begin, end);
@@ -281,7 +280,7 @@ size_t algorithms::sorting::shell(T (&arr)[n], Compare compare) {
     return numOfOpertations;
 }
 
-template <Iterable Itr, typename Compare>
+template <Traversable Itr, typename Compare>
 size_t algorithms::sorting::shell(Itr begin, Itr end, Compare compare) {
     size_t numOfOpertations{};
     auto size = distance(begin, end);
@@ -356,6 +355,35 @@ std::pair<std::optional<size_t>, size_t> algorithms::searching::binary(const T (
     return {std::nullopt, numOfOpertations};
 }
 
+template <Traversable Itr>
+std::pair<Itr, size_t> algorithms::searching::binary(Itr begin, Itr end, const std::iter_value_t<Itr>& target) {
+    auto high = begin;
+    auto low = end;
+    Itr found{};
+    size_t numOfOpertations{};
+
+    while (low != high) {
+        auto mid = next(high, (distance(high, low) / 2));
+        auto guess = *mid;
+
+        if (guess == target) {
+            found = mid;
+            numOfOpertations++;
+            return {found, numOfOpertations};
+        }
+
+        if (target > guess) {
+            high = next(mid);
+            numOfOpertations++;
+        } else {
+            low = mid;
+            numOfOpertations++;
+        }
+    }
+
+    return {end, numOfOpertations};
+}
+
 template <typename T, size_t n, typename Compare>
 size_t algorithms::sorting::quicksort(T (&arr)[n], size_t low, size_t high, Compare compare) {
     size_t numOfOpertations{};
@@ -385,7 +413,7 @@ size_t algorithms::sorting::quicksort(T (&arr)[n], size_t low, size_t high, Comp
     return numOfOpertations;
 }
 
-template <Iterable Itr, typename Compare>
+template <Traversable Itr, typename Compare>
 size_t algorithms::sorting::quicksort(Itr begin, Itr end, Compare compare) {
     size_t numOfOpertations{};
     if (distance(begin, end) < 1) return numOfOpertations;

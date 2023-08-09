@@ -43,7 +43,7 @@ static const map<string, set<string>> locations{
     {"Video", {"mp4", "avi", "mkv"}},
     {"TBDTorrents", {"torrent"}}};
 
-void createFolders(fs::path basePath) {
+void createFolders(const fs::path& basePath) {
     for (const auto& [folder, exts] : locations) {
         try {
             fs::create_directory(basePath / folder);
@@ -56,7 +56,7 @@ void createFolders(fs::path basePath) {
     }
 }
 
-void moveToFolder(fs::directory_entry file) {
+void moveToFolder(const fs::directory_entry& file) {
     for (const auto& [folder, exts] : locations) {
         string fileExt = file.path().extension().string();
         fileExt = string{fileExt.begin() + 1, fileExt.end()};
@@ -67,13 +67,7 @@ void moveToFolder(fs::directory_entry file) {
                 const auto destFolder = fs::current_path() / fs::path{folder};
                 const auto destName = file.path();
                 const auto fullLoc = destFolder / destName.filename();
-                auto res = fs::copy_file(file, fullLoc);
-                if (!res) {
-                    string err = "Could not move file ";
-                    err.append(file.path().filename().string());
-                    throw std::runtime_error(err);
-                }
-                fs::remove(file);
+                fs::rename(file, fullLoc);
 
             } catch (const std::exception&) {
                 throw;
