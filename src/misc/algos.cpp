@@ -25,11 +25,6 @@ void printArray(Itr begin, Itr end, const size_t& maxShown) {
 
 void printNumOfOps(volatile const size_t& ops) { std::cout << "Number of Operations: " << ops << "\n"; }
 
-template <typename T, size_t n>
-void resetArray(std::array<T, n>& origin, std::array<T, n>& working) {
-    std::copy(std::begin(origin), std::end(origin), std::begin(working));
-}
-
 template <typename Itr>
     requires std::random_access_iterator<Itr>
 void resetArray(Itr sourceBegin, Itr sourceEnd, Itr targetBegin) {
@@ -41,28 +36,20 @@ int main() {
     using namespace algorithms;
 
     std::mt19937_64 mtEngine{69};
-    // const size_t arrayLength{690'000};
-    // const size_t arrayLength{1'000'000};
-    // const size_t arrayLength{100'000};
-    const size_t arrayLength{240'000};
-    // const size_t arrayLength{400'000};
-    // const size_t arrayLength{4};
+    const size_t arrayLength{1'000'000};
     const size_t maxShown{30};
-    std::uniform_int_distribution<int> intD{1, 100'000};
     volatile size_t numOfOps{0};
 
-    const auto rng = [&intD, &mtEngine]() { return intD(mtEngine); };
-
     std::array<int, arrayLength> workingList{};
-    std::array<int, arrayLength> originalList{};
 
-    std::generate(originalList.begin(), originalList.end(), rng);
+    std::iota(workingList.begin(), workingList.end(), 1);
 
-    std::copy(std::begin(originalList), std::end(originalList), std::begin(workingList));
+    std::shuffle(workingList.begin(), workingList.end(), mtEngine);
 
-    printf("Dataset size: %zu\nFirst %zu elements:\n", arrayLength, maxShown);
+    // printf("Dataset size: %zu\nFirst %zu elements:\n", arrayLength, maxShown);
+    std::cout << "Dataset size: " << arrayLength << "\nFirst " << maxShown << " elements "
+              << ":\n";
     printArray(workingList.begin(), workingList.end(), maxShown);
-    resetArray(originalList, workingList);
 
     // TimerClass* bubbleSort = new TimerClass("BubbleSort");
     // bubble(workingList);

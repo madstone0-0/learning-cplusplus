@@ -58,9 +58,6 @@ namespace algorithms {
         template <typename T, size_t n>
         std::pair<std::optional<size_t>, size_t> binary(const T (&arr)[n], const T& target);
 
-        template <typename T, size_t n>
-        std::pair<std::optional<size_t>, size_t> binary(const std::array<T, n>& arr, const T& target);
-
         template <Traversable Itr>
         std::pair<Itr, size_t> binary(Itr begin, Itr end, const std::iter_value_t<Itr>& target);
 
@@ -297,34 +294,6 @@ size_t algorithms::sorting::shell(Itr begin, Itr end, Compare compare) {
         numOfOpertations++;
     }
     return numOfOpertations;
-}
-
-template <typename T, size_t n>
-std::pair<std::optional<size_t>, size_t> algorithms::searching::binary(const std::array<T, n>& arr, const T& target) {
-    auto low = 0;
-    auto high = n - 1;
-    size_t numOfOpertations{};
-    size_t found{};
-
-    while (low <= high) {
-        auto mid = std::floor((high + low) / 2);
-        auto guess = arr[mid];
-
-        if (guess == target) {
-            found = mid;
-            numOfOpertations++;
-            return {found, numOfOpertations};
-        }
-
-        if (guess > target) {
-            high = mid - 1;
-            numOfOpertations++;
-        } else {
-            low = mid + 1;
-            numOfOpertations++;
-        }
-    }
-    return {std::nullopt, numOfOpertations};
 }
 
 template <typename T, size_t n>

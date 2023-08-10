@@ -12,7 +12,7 @@
 #include <utility>
 
 struct TimerClass {
-    explicit TimerClass(const std::string &x);
+    TimerClass(const std::string &x);
     TimerClass(const TimerClass &other);
     TimerClass(TimerClass &&other) noexcept;
     TimerClass &operator=(const TimerClass &other);

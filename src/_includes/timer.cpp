@@ -1,18 +1,16 @@
 #include "timer.hpp"
 
-using std::cout, std::chrono::high_resolution_clock, std::chrono::time_point;
+using namespace std::chrono_literals;
+using std::cout, std::chrono::high_resolution_clock, std::chrono::time_point, std::chrono::duration;
 
 TimerClass::TimerClass(const std::string &x)
     : timestamp{new time_point<high_resolution_clock>{high_resolution_clock::now()}}, name{new std::string{}} {
-    // snprintf(name->c_str(), x.size(), "%s", x.c_str());
     name->append(x.c_str());
 }
 
 TimerClass::TimerClass(const TimerClass &other)
     : timestamp{new time_point<high_resolution_clock>{other.timestamp.get()->time_since_epoch()}},
       name{new std::string{}} {
-    // snprintf(name.get(), strlen(other.name.get()), "%s", other.name.get());
-    // other.name->copy(const_cast<char *>(name->c_str()), other.name->size());
     name->append(other.name->c_str());
 }
 

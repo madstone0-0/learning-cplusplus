@@ -11,7 +11,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++20 -fmodules-ts -fconcepts")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++20 -fmodules-ts -fconcepts -ltbb")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Os -fno-ident")
 # add_compile_options(
@@ -24,6 +24,7 @@ set(INCLUDE ${CMAKE_SOURCE_DIR}/src/_includes)
 set(TIMER ${INCLUDE}/timer.hpp ${INCLUDE}/timer.cpp)
 set(TRACER ${INCLUDE}/tracer.hpp ${INCLUDE}/tracer.cpp)
 set(BYTE_HEADERS ${INCLUDE}/bytes.hpp ${INCLUDE}/bytes.cpp)
+set(STOPWATCH ${INCLUDE}/stopwatch.hpp)
 # file(GLOB_RECURSE HEADERS "src/_includes/*.hpp")
 
 #################
