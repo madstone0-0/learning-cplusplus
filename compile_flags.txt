@@ -4,6 +4,7 @@
 -fmodule-header
 -I./src/_includes/
 -I./src/
+-I/usr/include/python3.11
 -I./third_party/
 -I./third_party/google/googletest/googletest/include/
 -I./third_party/google/googletest/googlemock/include/
