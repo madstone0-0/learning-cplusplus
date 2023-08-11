@@ -4,6 +4,7 @@ g++
 -fconcepts
 -I./src/_includes/
 -I./src/
+-I/usr/include/python3.11
 -I./third_party/
 -I./build/_deps/googletest-src/googletest/include/
 -I./build/_deps/googletest-src/googlemock/include/

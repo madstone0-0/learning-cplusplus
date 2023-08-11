@@ -19,6 +19,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Os -fno-ident")
 # "$<$<CONFIG:DEBUG>: -g3;-ggdb;-Os>"
 # "$<$<CONFIG:RELEASE>: -O3;-Os;-fno-ident>"
 #     )
+# include_directories("/usr/include/python3.11")
 include_directories("src/_includes")
 set(INCLUDE ${CMAKE_SOURCE_DIR}/src/_includes)
 set(TIMER ${INCLUDE}/timer.hpp ${INCLUDE}/timer.cpp)
@@ -26,6 +27,12 @@ set(TRACER ${INCLUDE}/tracer.hpp ${INCLUDE}/tracer.cpp)
 set(BYTE_HEADERS ${INCLUDE}/bytes.hpp ${INCLUDE}/bytes.cpp)
 set(STOPWATCH ${INCLUDE}/stopwatch.hpp)
 # file(GLOB_RECURSE HEADERS "src/_includes/*.hpp")
+
+#################
+# Python        #
+#################
+find_package(Python 3.11)
+
 
 #################
 # Catch2        #
