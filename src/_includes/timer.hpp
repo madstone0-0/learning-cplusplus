@@ -1,5 +1,4 @@
-#ifndef TIMER_INCLUDE
-#define TIMER_INCLUDE
+#pragma once
 
 #include <sys/time.h>
 #include <unistd.h>
@@ -22,5 +21,3 @@ struct TimerClass {
     std::shared_ptr<std::chrono::time_point<std::chrono::high_resolution_clock>> timestamp{};
     std::shared_ptr<std::string> name{};
 };
-
-#endif

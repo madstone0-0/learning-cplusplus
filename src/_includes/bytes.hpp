@@ -1,9 +1,9 @@
-#ifndef BYTES_INCLUDE
-#define BYTES_INCLUDE
+#pragma once
 #include <string>
+#include <string_view>
 
 namespace Bytes {
-    using std::string;
+    using std::string, std::string_view;
     struct Byte {
         double value;
         string unit;
@@ -11,4 +11,3 @@ namespace Bytes {
 
     Byte convert(const double, const string&, const string&);
 }  // namespace Bytes
-#endif

@@ -1,5 +1,4 @@
-#ifndef MTS_CONCEPTS
-#define MTS_CONCEPTS
+#pragma once
 
 #include <bits/iterator_concepts.h>
 
@@ -13,5 +12,3 @@ namespace mts {
 
     }  // namespace concepts
 }  // namespace mts
-
-#endif

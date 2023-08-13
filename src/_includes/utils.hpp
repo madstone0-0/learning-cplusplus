@@ -1,3 +1,4 @@
+#pragma once
 #include <cstddef>
 #include <stdexcept>
 namespace Utils {

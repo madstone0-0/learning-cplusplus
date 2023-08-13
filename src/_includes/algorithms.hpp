@@ -1,5 +1,4 @@
-#ifndef ALGORITHMS_INCLUDE
-#define ALGORITHMS_INCLUDE
+#pragma once
 
 #include <algorithm>
 #include <array>
@@ -64,7 +63,6 @@ namespace algorithms {
     }  // namespace searching
 
 }  // namespace algorithms
-#endif
 
 using namespace mts::concepts;
 

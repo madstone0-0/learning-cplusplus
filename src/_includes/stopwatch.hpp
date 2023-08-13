@@ -1,5 +1,4 @@
-#ifndef STOPWATCH
-#define STOPWATCH
+#pragma once
 
 #include <chrono>
 
@@ -11,5 +10,3 @@ struct Stopwatch {
     std::chrono::nanoseconds& result;
     const std::chrono::time_point<std::chrono::high_resolution_clock> start;
 };
-
-#endif

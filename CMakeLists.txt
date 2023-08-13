@@ -11,9 +11,10 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++20 -fmodules-ts -fconcepts -ltbb")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Os -fno-ident")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++20 -fmodules-ts  -ltbb -lboost_program_options")
+set(CMAKE_CXX_FLAGS_DEBUG "-ggdb")
+set(CMAKE_CXX_FLAGS_RELEASE "-Os -fno-ident")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # add_compile_options(
 # "-Wall" "-Wextra" "-std=c++20" "-fmodules-ts" "-fconcepts"
 # "$<$<CONFIG:DEBUG>: -g3;-ggdb;-Os>"
