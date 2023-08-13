@@ -15,6 +15,8 @@ add_executable(server_udp server_udp.cpp)
 add_executable(daytime daytime.cpp)
 add_executable(ping ping.cpp)
 add_executable(beast beast.cpp)
+add_executable(beast_http beast_http.cpp)
+add_executable(async_beast_client async_beast_client.cpp)
 
 target_link_libraries(abuffers PRIVATE Catch2::Catch2WithMain)
 
