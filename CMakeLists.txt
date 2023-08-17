@@ -11,7 +11,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++20 -fmodules-ts  -ltbb -lboost_program_options")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++20 -fmodules-ts")
 set(CMAKE_CXX_FLAGS_DEBUG "-ggdb")
 set(CMAKE_CXX_FLAGS_RELEASE "-Os -fno-ident")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -28,6 +28,13 @@ set(TRACER ${INCLUDE}/tracer.hpp ${INCLUDE}/tracer.cpp)
 set(BYTE_HEADERS ${INCLUDE}/bytes.hpp ${INCLUDE}/bytes.cpp)
 set(STOPWATCH ${INCLUDE}/stopwatch.hpp)
 # file(GLOB_RECURSE HEADERS "src/_includes/*.hpp")
+
+#################
+# PkgConfig     #
+#################
+find_package(PkgConfig REQUIRED)
+pkg_search_module(TBB REQUIRED tbb IMPORTED_TARGET)
+
 
 #################
 # Python        #
@@ -57,11 +64,13 @@ include_directories(${IcecreamCpp_INCLUDE_DIRS})
 #################
 # Boost Library #
 #################
-set(Boost_USE_STATIC_LIBS ON)
+set( Boost_USE_STATIC_LIBS OFF )
 set(Boost_USE_MULTITHREADED ON)
+set( Boost_USE_STATIC_RUNTIME OFF )
 add_definitions(-D_WIN32_WINNT=0x0501)
 find_package(Boost COMPONENTS regex date_time system filesystem unit_test_framework program_options REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
+link_libraries(${Boost_LIBRARIES})
 
 macro(boosttest_add_test TESTNAME)
     add_executable(${TESTNAME} ${ARGN})
