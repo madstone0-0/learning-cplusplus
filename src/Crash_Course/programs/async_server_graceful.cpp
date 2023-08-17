@@ -19,10 +19,9 @@ using std::cout, std::endl, std::string, std::cerr, std::ostream, std::istream, 
 
 static std::atomic_bool interrupted;
 
-void handler(const sys::error_code& error, int signal) {
+void handler(int signal) {
     cout << "Shutting down..." << endl;
     interrupted = true;
-    interrupted.notify_all();
 }
 
 struct Session : std::enable_shared_from_this<Session> {
@@ -70,14 +69,17 @@ void serve(tcp::acceptor& acceptor) {
 int main() {
     try {
         asio::io_context context;
-        asio::signal_set signals(context, SIGINT);
+        asio::signal_set signals(context, SIGINT, SIGTERM);
+        signals.async_wait([&](const boost::system::error_code&, int sig) {
+            handler(sig);
+            context.stop();
+        });
         const int port{1895};
         const auto host = tcp::v4();
 
         tcp::acceptor acceptor{context, tcp::endpoint{tcp::v4(), port}};
         serve(acceptor);
         cout << "Listening on localhost:" << port << endl;
-        signals.async_wait(handler);
         context.run();
     } catch (sys::system_error& se) {
         cerr << "Error: " << se.what() << endl;

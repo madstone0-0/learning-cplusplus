@@ -14,3 +14,5 @@ add_executable(spin_lock spin_lock.cpp)
 add_executable(thread_queue thread_queue.cpp)
 
 target_link_libraries(async PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(algos_par PRIVATE PkgConfig::TBB PkgConfig::TBB)
+target_link_libraries(parallel PRIVATE PkgConfig::TBB PkgConfig::TBB)
