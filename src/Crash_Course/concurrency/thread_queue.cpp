@@ -12,22 +12,25 @@ using std::queue, std::async, std::launch, std::scoped_lock, std::mutex, std::mo
 
 template <typename T>
 struct ThreadQueue {
-    ThreadQueue() : data{} {}
+    ThreadQueue() = default;
     ThreadQueue(std::initializer_list<T> values) : data{values} {}
 
     ThreadQueue(const ThreadQueue& other) : data{other} {}
 
-    ThreadQueue(ThreadQueue&& other) : data{move(other.data)} {}
+    ThreadQueue(ThreadQueue&& other) noexcept : data{move(other.data)} {}
 
     ThreadQueue& operator=(const ThreadQueue& other) {
+        if (other == this) return *this;
         this->data = other.data;
         return *this;
     }
 
-    ThreadQueue& operator=(ThreadQueue&& other) {
+    ThreadQueue& operator=(ThreadQueue&& other) noexcept {
         this->data = move(other.data);
         return *this;
     }
+
+    ~ThreadQueue() = default;
 
     void pop() {
         scoped_lock<mutex> lock{m};

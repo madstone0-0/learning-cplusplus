@@ -71,7 +71,7 @@ TEST_CASE("string's c_str method makes null terminated strings") {
 
 /* Comparisions */
 
-TEST_CASE("std::string supports comparision with ") {
+TEST_CASE("std::string supports comparison with ") {
     using namespace std::string_literals;
     string word{"allusion"};
     SECTION("operator== and !=") {
@@ -89,7 +89,7 @@ TEST_CASE("std::string supports comparision with ") {
     }
 }
 
-/* Comparisions */
+/* Comparisons */
 
 /* Manipulation */
 

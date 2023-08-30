@@ -4,11 +4,9 @@
 
 #include <type_traits>
 
-namespace mts {
-    namespace concepts {
+namespace mts::concepts {
 
-        template <typename T>
-        concept Traversable = std::random_access_iterator<T>;
+    template <typename T>
+    concept Traversable = std::random_access_iterator<T>;
 
-    }  // namespace concepts
-}  // namespace mts
+}  // namespace mts::concepts

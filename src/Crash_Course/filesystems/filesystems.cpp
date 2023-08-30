@@ -16,7 +16,7 @@ TEST_CASE("std::filesystem::path supports == and empty()") {
 }
 
 // Decomposition
-TEST_CASE("std::filesystem::path decompositon methods") {
+TEST_CASE("std::filesystem::path decomposition methods") {
     // const fs::path path{"/home/mads/aliases.linux.zsh"};
     const fs::path path{R"(C:\Windows\System32\kernel32.dll)"};
     cout << "Root name: " << path.root_name() << "\nRoot path: " << path.root_path()
