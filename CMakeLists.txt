@@ -11,8 +11,8 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++20 -fmodules-ts")
-set(CMAKE_CXX_FLAGS_DEBUG "-ggdb")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++20")
+set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -fsanitize=address")
 set(CMAKE_CXX_FLAGS_RELEASE "-Os -fno-ident")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # add_compile_options(
@@ -35,6 +35,10 @@ set(STOPWATCH ${INCLUDE}/stopwatch.hpp)
 find_package(PkgConfig REQUIRED)
 pkg_search_module(TBB REQUIRED tbb IMPORTED_TARGET)
 
+#################
+#  Fmt          #
+#################
+find_package(fmt 10 REQUIRED )
 
 #################
 # Python        #

@@ -41,16 +41,19 @@ int main(int argc, char* argv[]) {
 
     if (vm["from"].empty()) {
         cerr << "You must provide an initial unit" << endl;
+        cerr << description;
         return -1;
     }
 
     if (vm["to"].empty()) {
         cerr << "You must provide a result unit" << endl;
+        cerr << description;
         return -1;
     }
 
     if (vm["value"].empty()) {
         cerr << "You must provide a value" << endl;
+        cerr << description;
         return -1;
     }
 
@@ -65,7 +68,7 @@ int main(int argc, char* argv[]) {
         Byte result = convert(value, unit, toUnit);
         printf("%g %s = %g %s\n", value, unit.c_str(), result.value, result.unit.c_str());
     } catch (const std::exception& e) {
-        printf("Execption: %s\n", e.what());
+        cerr << "Exception: " << e.what() << endl;
         return 1;
     }
 

@@ -357,7 +357,11 @@ size_t algorithms::sorting::quicksort(T (&arr)[n], size_t low, size_t high, Comp
     if (n < 2) return numOfOpertations;
     if (low >= high) return numOfOpertations;
 
+    // Last element as pivot
     T pivot{arr[high]};
+
+    // Middle element as pivot
+    // T pivot{arr[low + (high - low) / 2]};
     long pivotIndex{static_cast<long>(low - 1)};
     for (size_t i{low}; i <= high - 1; i++) {
         // if (arr[i] <= pivot) {
@@ -385,8 +389,13 @@ size_t algorithms::sorting::quicksort(Itr begin, Itr end, Compare compare) {
     size_t numOfOpertations{};
     if (distance(begin, end) < 1) return numOfOpertations;
 
+    // Last element as pivot
     auto pivot = prev(end);
     auto pivotItr = begin;
+
+    // Middle element as pivot
+    // auto pivot = next(begin, distance(begin + 1, end) / 2);
+    // auto pivotItr = next(begin, distance(begin, pivot) - 1);
 
     for (auto j = begin; j != pivot; ++j) {
         if (compare(*j, *pivot)) {
