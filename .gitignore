@@ -1,8 +1,10 @@
 .ccls-cache
 build
+build-*
 build_old
 CMakeFiles
 tags
 *.log
 .cmake
 .cache
+./src/Math/Math-for-Programmers/
