@@ -7,4 +7,4 @@ tags
 *.log
 .cmake
 .cache
-./src/Math/Math-for-Programmers/
+src/Math/Math-for-Programmers
