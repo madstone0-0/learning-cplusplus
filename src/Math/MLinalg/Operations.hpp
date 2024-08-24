@@ -33,9 +33,17 @@ namespace mlinalg {
 
     template <Number number, size_t m, size_t n>
     bool isInconsistent(LinearSystem<number, m, n> system) {
-        const auto& lastRow = system.back();
-        auto count = std::count(lastRow.begin(), lastRow.end() - 1, 0);
-        return m <= n - 1 && (count == n - 1 && lastRow.back() != 0);
+        // const auto& lastRow = system.back();
+        // auto count = std::count(lastRow.begin(), lastRow.end() - 1, 0);
+        // return m <= n - 1 && (count == n - 1 && lastRow.back() != 0);
+        for (const auto& row : system) {
+            size_t zeroCount{};
+            for (size_t i{}; i < n - 1; i++)
+                if (row.at(i) == 0) zeroCount++;
+
+            if (zeroCount == n && row.back() != 0) return true;
+        }
+        return false;
     }
 
     template <Number number, size_t m, size_t n>
