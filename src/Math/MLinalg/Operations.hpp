@@ -1,3 +1,4 @@
+#pragma once
 #include <algorithm>
 #include <array>
 #include <boost/rational.hpp>
@@ -96,6 +97,16 @@ namespace mlinalg {
     }
 
     template <Number number, size_t m, size_t n>
+    optional<size_t> getPivotRow(const LinearSystem<number, m, n>& system, size_t startRow, size_t col) {
+        for (size_t row = startRow; row < m; ++row) {
+            if (system.at(row).at(col) != 0) {
+                return row;
+            }
+        }
+        return std::nullopt;  // No pivot found in this column
+    }
+
+    template <Number number, size_t m, size_t n>
     LinearSystem<number, m, n> rearrangeSystem(LinearSystem<number, m, n> system) {
         auto getZeroCount = [](const Row<number, n>& row) {
             size_t mid = floor((n - 1) / 2.);
@@ -125,9 +136,7 @@ namespace mlinalg {
         for (size_t i{}; i < rowCounts.size(); i++) {
             const auto& [idx, count] = rowCounts.at(i);
             if (i != idx) {
-                auto temp = rearranged.at(i);
-                rearranged.at(i) = rearranged.at(idx);
-                rearranged.at(idx) = temp;
+                std::swap(rearranged.at(i), rearranged.at(idx));
             }
             rowCounts = getRowSortedCounts(rearranged);
         }
@@ -135,7 +144,7 @@ namespace mlinalg {
     }
 
     template <Number number, size_t m, size_t n>
-    LinearSystem<number, m, n> ref(LinearSystem<number, m, n> system) {
+    LinearSystem<number, m, n> refSq(LinearSystem<number, m, n> system) {
         RowOptional<number, n> pivots = getPivots(system);
         while (!isInEchelonForm(system, pivots)) {
             for (size_t i{}; i < pivots.size(); i++) {
@@ -143,7 +152,7 @@ namespace mlinalg {
                 const auto& pivot = pivots.at(i);
                 if (!pivot.has_value()) continue;
                 for (size_t j{i + 1}; j < m; j++) {
-                    /*system = rearrangeSystem(system);*/
+                    system = rearrangeSystem(system);
                     pivots = getPivots(system);
                     auto lower = system.at(j).at(i);
                     if (lower == 0) continue;
@@ -161,7 +170,66 @@ namespace mlinalg {
     }
 
     template <Number number, size_t m, size_t n>
-    LinearSystem<number, m, n> rref(LinearSystem<number, m, n> system, bool identity = true) {
+    LinearSystem<number, m, n> refRec(LinearSystem<number, m, n> system) {
+        for (size_t col = 0; col < n && col < m; ++col) {
+            system = rearrangeSystem(system);
+            size_t pivotRow = col;
+
+            for (size_t row = pivotRow + 1; row < m; ++row) {
+                if (system.at(row).at(col) != 0) {
+                    auto factor = system.at(row).at(col) / system.at(pivotRow).at(col);
+                    for (size_t j = col; j < n; ++j) {
+                        system.at(row).at(j) -= factor * system.at(pivotRow).at(j);
+                    }
+                }
+            }
+        }
+        return system;
+    }
+
+    template <Number number, size_t m, size_t n>
+    LinearSystem<number, m, n> ref(LinearSystem<number, m, n> system) {
+        if (m == n) return refSq(system);
+        return refRec(system);
+    }
+
+    template <Number number, size_t m, size_t n>
+    LinearSystem<number, m, n> rrefRec(LinearSystem<number, m, n> system, bool identity = true) {
+        RowOptional<number, n> pivots = getPivots(system);
+        if (!isInEchelonForm(system, pivots)) system = ref(system);
+
+        for (size_t col = n; col > 0; --col) {
+            system = rearrangeSystem(system);
+            size_t pivotRow = col - 1;
+
+            if (pivotRow >= m) continue;
+
+            if (system.at(pivotRow).at(col - 1) == 0) continue;
+
+            if (identity) {
+                auto pivotValue = system.at(pivotRow).at(col - 1);
+                if (pivotValue != 0) {
+                    for (size_t j = 0; j < n; ++j) {
+                        system.at(pivotRow).at(j) /= pivotValue;
+                    }
+                }
+            }
+
+            for (size_t row = 0; row < pivotRow; ++row) {
+                auto upperValue = system.at(row).at(col - 1);
+                if (upperValue != 0) {
+                    for (size_t j = 0; j < n; ++j) {
+                        system.at(row).at(j) -= upperValue * system.at(pivotRow).at(j);
+                    }
+                }
+            }
+        }
+
+        return system;
+    }
+
+    template <Number number, size_t m, size_t n>
+    LinearSystem<number, m, n> rrefSq(LinearSystem<number, m, n> system, bool identity = true) {
         RowOptional<number, n> pivots = getPivots(system);
         if (!isInEchelonForm(system, pivots)) system = ref(system);
         pivots = getPivots(system);
@@ -199,6 +267,21 @@ namespace mlinalg {
             }
 
         return system;
+    }
+
+    template <Number number, size_t m, size_t n>
+    LinearSystem<number, m, n> rref(LinearSystem<number, m, n> system, bool identity = true) {
+        if (m == n) return rrefSq(system, identity);
+        return rrefRec(system, identity);
+    }
+
+    template <Number number, size_t m, size_t n>
+    optional<RowOptional<number, n>> findSolutions(LinearSystem<number, m, n> system);
+
+    template <Number number, size_t m, size_t n>
+    auto findSolutions(Matrix<number, m, n> A, Vector<number, m> b) {
+        auto system = A.augment(b);
+        return findSolutions(system);
     }
 
     template <Number number, size_t m, size_t n>
