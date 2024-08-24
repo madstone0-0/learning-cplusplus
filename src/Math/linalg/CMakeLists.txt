@@ -4,5 +4,5 @@ project(linalg LANGUAGES CXX)
 
 include_directories(${LINALG})
 
-add_executable(solver solver.cpp)
-target_link_libraries(solver MLinalg)
+add_executable(tests tests.cpp)
+target_link_libraries(tests MLinalg)
