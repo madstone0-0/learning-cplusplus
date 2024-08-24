@@ -86,8 +86,7 @@ namespace mlinalg::structures {
 
         [[nodiscard]] size_t size() const { return n; }
 
-        template <Number Scalar>
-        Vector<number, n> operator*(Scalar scalar) const {
+        Vector<number, n> operator*(const number& scalar) const {
             Vector<number, n> res{};
             for (size_t i{}; i < n; i++) res.at(i) = scalar * this->at(i);
             return res;
@@ -121,10 +120,7 @@ namespace mlinalg::structures {
             return res;
         }
 
-        template <Number Scalar>
-        friend Vector<number, n> operator*(Scalar scalar, Vector<number, n> vec) {
-            return vec * scalar;
-        }
+        friend Vector<number, n> operator*(const number& scalar, Vector<number, n> vec) { return vec * scalar; }
 
         constexpr auto begin() const { return row.begin(); }
         constexpr auto end() const { return row.end(); }
@@ -190,7 +186,9 @@ namespace mlinalg::structures {
     };
 
     template <Number number, size_t n>
-    using Row = Vector<number, n>;
+    Vector<number, n> operator*(const number& scalar, Vector<number, n> vec) {
+        return vec * scalar;
+    }
 
     template <Number number, size_t m, size_t n>
     Vector<number, n> operator*(Matrix<number, m, n> mat, ColumnVector<number, m> vec) {
