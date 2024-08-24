@@ -73,6 +73,19 @@ namespace mlinalg::structures {
         number& at(size_t i) { return row.at(i); }
         number at(size_t i) const { return row.at(i); }
 
+        double dot(Vector<number, n> other) const {
+            double sum{};
+            for (size_t i{}; i < n; i++) sum += this->at(i) * other.at(i);
+            return sum;
+        }
+
+        [[nodiscard]] double length() const { return std::sqrt(this->dot(*this)); }
+
+        [[nodiscard]] double dist(Vector<number, n> other) const {
+            auto diff = *this - other;
+            return std::sqrt(diff.dot(diff));
+        }
+
         Vector<number, n> operator-(Vector<number, n> other) const {
             Vector<number, n> res{};
             for (size_t i{}; i < n; i++) res.at(i) = row.at(i) - other.at(i);
