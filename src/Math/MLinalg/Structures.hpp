@@ -30,8 +30,8 @@ namespace mlinalg::structures {
     template <Number number, size_t n>
     class Vector;
 
-    template <Number number, size_t n>
-    using ColumnVector = Matrix<number, n, 1>;
+    // template <Number number, size_t n>
+    // using ColumnVector = Matrix<number, n, 1>;
 
     template <Number number, size_t m, size_t n>
     using TransposeVariant = std::variant<Vector<number, m>, Matrix<number, n, m>>;
@@ -44,7 +44,6 @@ namespace mlinalg::structures {
        public:
         Vector() = default;
         Vector(std::initializer_list<number> list) {
-            /*if constexpr (list.size() != n) throw std::invalid_argument("Invalid vector size");*/
             for (size_t i{}; i < n; i++) row.at(i) = *(list.begin() + i);
         }
 
@@ -58,8 +57,8 @@ namespace mlinalg::structures {
             return *this;
         }
 
-        Vector& operator=(const ColumnVector<number, n>& other) {
-            for (size_t i{}; i < n; i++) row.at(i) = other.at(i).at(0);
+        Vector& operator=(const Matrix<number, 1, n>& other) {
+            for (size_t i{}; i < n; i++) row.at(i) = other.at(0).at(i);
             return *this;
         }
 
@@ -73,11 +72,7 @@ namespace mlinalg::structures {
         number& at(size_t i) { return row.at(i); }
         number at(size_t i) const { return row.at(i); }
 
-        double dot(Vector<number, n> other) const {
-            double sum{};
-            for (size_t i{}; i < n; i++) sum += this->at(i) * other.at(i);
-            return sum;
-        }
+        double dot(Vector<number, n> other) const { return (this->T() * other).at(0); }
 
         [[nodiscard]] double length() const { return std::sqrt(this->dot(*this)); }
 
@@ -121,19 +116,13 @@ namespace mlinalg::structures {
          *
          * @return ColumnVector<number, n>
          */
-        [[nodiscard]] ColumnVector<number, n> T() const {
-            ColumnVector<number, n> res{};
-            for (size_t i{}; i < n; i++) res.at(i).at(0) = this->at(i);
+        [[nodiscard]] Matrix<number, 1, n> T() const {
+            Matrix<number, 1, n> res{};
+            for (size_t i{}; i < n; i++) res.at(0).at(i) = this->at(i);
             return res;
         }
 
-        Vector operator*(ColumnVector<number, n> vec) const {
-            Vector<number, n> res{};
-            for (size_t i{}; i < n; i++) res.at(i) = this->at(i) * vec.at(i).at(0);
-            return res;
-        }
-
-        friend Vector<number, n> operator*(const number& scalar, Vector<number, n> vec) { return vec * scalar; }
+        auto operator*(Vector<number, n> vec) const { return this->T() * vec; }
 
         constexpr auto begin() const { return row.begin(); }
         constexpr auto end() const { return row.end(); }
@@ -146,46 +135,51 @@ namespace mlinalg::structures {
         constexpr auto rbegin() { return row.rbegin(); }
         constexpr auto rend() { return row.rend(); }
 
+        friend std::ostream& operator<<(std::ostream& os, const Vector<number, n>& row) {
+            if (row.size() == 1)
+                os << "[ " << row.at(0) << " ]\n";
+            else
+                for (size_t i{}; i < row.size(); i++)
+                    if (i == 0) {
+                        os << "⎡ " << row.at(i) << " ⎤\n";
+                    } else if (i == row.size() - 1) {
+                        os << "⎣ " << row.at(i) << " ⎦\n";
+                    } else {
+                        os << "| " << row.at(i) << " |\n";
+                    }
+            return os;
+        }
+
         friend std::ostream& operator<<(std::ostream& os, const optional<Vector<number, n>>& rowPot) {
-            os << "[";
             if (!rowPot.has_value()) {
                 os << "Empty Vector";
                 return os;
             }
             const auto& row = rowPot.value();
+            const auto& size = row.size();
 
-            for (size_t i{}; i < row.size(); i++)
-                if (i != row.size() - 1) {
-                    if (row.at(i).has_value())
-                        os << row.at(i).value() << ", ";
-                    else
-                        os << "None, ";
+            auto hasVal = [](auto rowVal) {
+                std::string val{};
+                if (rowVal.has_value())
+                    val = std::to_string(rowVal.value());
+                else
+                    val = "None";
+                return val;
+            };
 
-                } else {
-                    if (row.at(i).has_value())
-                        os << row.at(i).value();
-                    else
-                        os << "None";
+            if (size == 1)
+                os << "[ " << (row.at(0).has_value() ? std::string{row.at(0).value()} : "None") << " ]\n";
+            else
+                for (size_t i{}; i < row.size(); i++) {
+                    if (i == 0) {
+                        os << "⎡ " << hasVal(row.at(i)) << " ⎤\n";
+                    } else if (i == row.size() - 1) {
+                        os << "⎣ " << hasVal(row.at(i)) << " ⎦\n";
+
+                    } else {
+                        os << "| " << hasVal(row.at(i)) << " |\n";
+                    }
                 }
-            os << " ]\n\n";
-            return os;
-        }
-
-        template <Number num, size_t mN, size_t nN>
-        static Vector<num, mN> extractVectorFromTranspose(const TransposeVariant<num, mN, nN> T) {
-            return std::get<Vector<num, mN>>(T);
-        }
-
-        friend std::ostream& operator<<(std::ostream& os, const Vector<number, n>& row) {
-            os << "[";
-            for (size_t i{}; i < row.size(); i++)
-                if (i != row.size() - 1) {
-                    os << row.at(i) << ", ";
-
-                } else {
-                    os << row.at(i);
-                }
-            os << " ]\n";
             return os;
         }
 
@@ -203,16 +197,6 @@ namespace mlinalg::structures {
         return vec * scalar;
     }
 
-    template <Number number, size_t m, size_t n>
-    Vector<number, n> operator*(Matrix<number, m, n> mat, ColumnVector<number, m> vec) {
-        Vector<number, n> res{};
-        for (size_t i{}; i < n; i++) {
-            auto multRes = mat.at(i) * vec;
-            res.at(i) = std::accumulate(multRes.begin(), multRes.end(), 0);
-        }
-        return res;
-    }
-
     template <Number number, size_t n>
     using Row = Vector<number, n>;
 
@@ -224,25 +208,8 @@ namespace mlinalg::structures {
 
         Matrix() = default;
         constexpr Matrix(std::initializer_list<std::initializer_list<number>> rows) {
-            /*if constexpr (rows.size() != m) throw std::invalid_argument("Invalid matrix size");*/
             for (size_t i{}; i < m; i++) matrix.at(i) = Row<number, n>{*(rows.begin() + i)};
         }
-        /*Matrix(array<Row<number, n>, m> rows) : matrix{rows} {*/
-        /*    if constexpr (rows.size() != m || rows.at(0).size != n) throw std::invalid_argument("Invalid matrix
-         * size");*/
-        /*}*/
-
-        /*template <typename... Rows>*/
-        /*constexpr Matrix(Rows&&... rows) : matrix{std::forward<Rows>(rows)...} {*/
-        /*    static_assert((std::conjunction_v<std::bool_constant<std::tuple_size_v<std::decay_t<Rows>> == n>...>),*/
-        /*                  "Invalid matrix size");*/
-        /*}*/
-
-        /*template <typename... Rows, typename = std::enable_if_t<(sizeof...(Rows) == m)>>*/
-        /*constexpr explicit Matrix(Rows&&... rows) : matrix({std::forward<Rows>(rows)...}) {*/
-        /*    static_assert((std::conjunction_v<std::bool_constant<std::tuple_size_v<std::decay_t<Rows>> == n>...>),*/
-        /*                  "Invalid matrix size");*/
-        /*}*/
 
         Matrix(const Matrix& other) : matrix{other.matrix} {}
         Matrix(Matrix&& other) noexcept : matrix{std::move(other.matrix)} {}
@@ -253,14 +220,14 @@ namespace mlinalg::structures {
             return *this;
         }
 
-        vector<ColumnVector<number, m>> colToVectorSet() const {
-            vector<ColumnVector<number, m>> res{};
+        vector<Vector<number, m>> colToVectorSet() const {
+            vector<Vector<number, m>> res{};
             for (size_t i{}; i < n; i++) {
                 Vector<number, m> vec;
                 for (size_t j{}; j < m; j++) {
                     vec.at(j) = this->matrix.at(j).at(i);
                 }
-                res.push_back(vec.T());
+                res.push_back(vec);
             }
             return res;
         }
@@ -293,34 +260,16 @@ namespace mlinalg::structures {
             return res;
         }
 
-        ColumnVector<number, m> operator*(ColumnVector<number, m> vec) const {
-            ColumnVector<number, m> res{};
-            auto asRows{rowToVectorSet()};
-            int i{};
-            for (const auto& row : asRows) {
-                auto multRes = row * vec;
-                auto newRow = multRes.T();
-                number sum{};
-                for (const auto& val : newRow) sum += val.at(0);
-                res.at(i).at(0) = sum;
-                i++;
-            }
-            return res;
-        }
-
-        Vector<number, m> operator*(Vector<number, m> vec) const {
-            auto res = *this * vec.T();
-            return std::get<Vector<number, m>>(res.T());
-        }
+        Vector<number, m> operator*(Vector<number, n> vec) const { return multMatByVec(vec); }
 
         template <size_t nOther>
         Matrix<number, m, nOther> operator*(const Matrix<number, n, nOther> other) const {
-            return multByDef(other);
+            return multMatByDef(other);
         }
 
         template <size_t nOther>
         Matrix<number, m, nOther> operator*(const TransposeVariant<number, n, nOther> other) const {
-            return multByDef(extractMatrixFromTranspose(other));
+            return multMatByDef(extractMatrixFromTranspose(other));
         }
 
         Matrix& operator=(Matrix&& other) noexcept {
@@ -330,8 +279,36 @@ namespace mlinalg::structures {
 
         ~Matrix() = default;
 
+        [[nodiscard]] size_t numRows() const { return m; }
+
+        [[nodiscard]] size_t numCols() const { return m; }
+
         friend std::ostream& operator<<(std::ostream& os, const Matrix<number, m, n>& system) {
-            for (const auto row : system) os << row;
+            const auto& nRows = system.numRows();
+            if (system.numRows() == 1) {
+                os << "[ ";
+                int i{};
+                for (const auto& elem : system.at(0)) os << " " << elem << " ";
+                os << "]\n";
+            } else {
+                int i{};
+                for (const auto& row : system.matrix) {
+                    if (i == 0) {
+                        os << "⎡";
+                        for (const auto& elem : row) os << " " << elem << " ";
+                        os << "⎤\n";
+                    } else if (i == nRows - 1) {
+                        os << "⎣";
+                        for (const auto& elem : row) os << " " << elem << " ";
+                        os << "⎦\n";
+                    } else {
+                        os << "|";
+                        for (const auto& elem : row) os << " " << elem << " ";
+                        os << "|\n";
+                    }
+                    i++;
+                }
+            }
             return os;
         }
 
@@ -388,11 +365,22 @@ namespace mlinalg::structures {
         constexpr auto rend() { return matrix.rend(); }
 
         template <Number num, size_t mN, size_t nN>
-        static Matrix<num, mN, nN> fromColVectorSet(const vector<ColumnVector<num, mN>>& vecSet) {
-            Matrix<num, mN, nN> res{};
+        static Matrix<num, mN, nN> fromColVectorSet(const vector<Vector<num, mN>>& vecSet) {
+            Matrix<num, mN, nN> res;
             for (size_t i{}; i < nN; i++) {
-                const auto& colVec{vecSet.at(i)};
-                for (size_t j{}; j < mN; j++) res.at(j).at(i) = colVec.at(j).at(0);
+                const auto& vec{vecSet.at(i)};
+                for (size_t j{}; j < mN; j++) {
+                    res.at(j).at(i) = vec.at(j);
+                }
+            }
+            return res;
+        }
+
+        template <Number num, size_t mN, size_t nN>
+        static Matrix<num, mN, nN> fromRowVectorSet(const vector<Vector<num, nN>>& vecSet) {
+            Matrix<num, mN, nN> res;
+            for (size_t i{}; i < mN; i++) {
+                res.at(i) = vecSet.at(i);
             }
             return res;
         }
@@ -400,15 +388,15 @@ namespace mlinalg::structures {
         template <size_t nN>
         Matrix<number, m, nN + n> augment(const Matrix<number, m, nN>& other) const {
             Matrix<number, m, nN + n> res{};
-            for (size_t i{}; i < m; i++) {
+            for (int i{}; i < m; i++) {
                 auto& row{res.at(i)};
                 const auto& thisRow{this->at(i)};
                 const auto& otherRow{other.at(i)};
-                for (size_t j{}; j < (nN + n); j++) {
+                for (int j{}; j < (nN + n); j++) {
                     if (j < n)
                         row.at(j) = thisRow.at(j);
                     else
-                        row.at(j) = otherRow.at((j - nN) - 1);
+                        row.at(j) = otherRow.at((j - static_cast<int>(nN)));
                 }
             }
             return res;
@@ -429,10 +417,28 @@ namespace mlinalg::structures {
         }
 
        private:
+        Vector<number, m> multMatByVec(Vector<number, n> vec) const {
+            Vector<number, m> res{};
+            auto asCols{colToVectorSet()};
+            int i{};
+            for (auto& col : asCols) {
+                const auto& mult = vec.at(i);
+                col = mult * col;
+                i++;
+            }
+
+            for (size_t i{}; i < m; i++) {
+                number sumRes{};
+                for (const auto& col : asCols) sumRes += col.at(i);
+                res.at(i) = sumRes;
+            }
+
+            return res;
+        }
         template <size_t nOther>
-        Matrix<number, m, nOther> multByDef(const Matrix<number, n, nOther>& other) const {
+        Matrix<number, m, nOther> multMatByDef(const Matrix<number, n, nOther>& other) const {
             auto otherColVecSet{other.colToVectorSet()};
-            vector<ColumnVector<number, m>> res{};
+            vector<Vector<number, m>> res{};
             for (size_t i{}; i < nOther; i++) {
                 const auto& col{otherColVecSet.at(i)};
                 auto multRes = *this * col;

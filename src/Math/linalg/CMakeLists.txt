@@ -5,4 +5,6 @@ project(linalg LANGUAGES CXX)
 include_directories(${LINALG})
 
 add_executable(tests tests.cpp)
-target_link_libraries(tests MLinalg)
+add_executable(fundamental fundamental.cpp)
+target_link_libraries(tests mlinalg)
+target_link_libraries(fundamental mlinalg)

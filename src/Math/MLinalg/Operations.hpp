@@ -304,4 +304,18 @@ namespace mlinalg {
         return solutions;
     }
 
+    template <Number num, size_t mN, size_t nN>
+    Vector<num, mN> extractVectorFromTranspose(const TransposeVariant<num, mN, nN> T) {
+        return std::get<Vector<num, mN>>(T);
+    }
+
+    template <Number number, size_t m>
+    Matrix<number, m, m> I() {
+        Matrix<number, m, m> identity{};
+        for (size_t i{}; i < m; i++) {
+            identity.at(i).at(i) = 1;
+        }
+        return identity;
+    }
+
 }  // namespace mlinalg

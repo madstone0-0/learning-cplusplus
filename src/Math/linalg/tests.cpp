@@ -9,7 +9,7 @@ template <Number number, size_t m, size_t n>
 auto printSol(mlinalg::LinearSystem<number, m, n> system) {
     using namespace mlinalg;
     auto sol{findSolutions(system)};
-    cout << "For the system:\n" << system << "\nThe solutions are: ";
+    cout << "For the system:\n" << system << "\nThe solutions are:\n";
     if (!sol.has_value()) {
         cout << "The system is inconsistent\n\n";
         return;
@@ -21,7 +21,7 @@ template <Number number, size_t m, size_t n>
 auto printSol(mlinalg::Matrix<number, m, n> A, mlinalg::Vector<number, m> b) {
     using namespace mlinalg;
     auto sol{findSolutions(A, b)};
-    cout << "For the system:\n" << A.augment(b) << "\nThe solutions are: ";
+    cout << "For the system:\n" << A.augment(b) << "\nThe solutions are:\n";
     if (!sol.has_value()) {
         cout << "The system is inconsistent\n\n";
         return;
@@ -125,9 +125,9 @@ int main() {
     cout << sys1.T() << "\n";
     cout << sys1 << '\n';
     cout << sys1 * 2 << "\n";
-    /*cout << 2 * sys1 << "\n";*/
-    // cout << Row<double, 2>{1, 2}.T() * Matrix<double, 2, 2>{{2, 1}, {2, 1}} << '\n';
-    // cout << Row<double, 2>{1, 2} * Matrix<double, 2, 2>{{2, 1}, {2, 1}} << '\n';
+    cout << 2. * sys1 << "\n";
+    cout << Row<double, 2>{1, 2}.T() * Matrix<double, 2, 2>{{2, 1}, {2, 1}} << '\n';
+    cout << Row<double, 2>{1, 2} * Matrix<double, 2, 2>{{2, 1}, {2, 1}} << '\n';
     cout << symmetric << '\n';
     cout << symmetric.T() << '\n';
     cout << symmetric * symmetric.T() << '\n';
@@ -137,7 +137,7 @@ int main() {
     auto B = Matrix<double, 2, 2>{{2, 0}, {4, 3}};
     cout << A * B << '\n';
     cout << B * A << '\n';
-    // printSol(sys20);
+    printSol(sys20);
     cout << ref(sys20) << '\n';
     cout << rref(sys20) << '\n';
 
@@ -146,14 +146,15 @@ int main() {
     auto e1 = Vector<double, 2>{1, 0};
     auto e2 = Vector<double, 2>{0, 1};
     // cout << ref * shear << '\n';
-    cout << (e2 + 2 * e1) << '\n';
+    cout << (e2 + 2. * e1) << '\n';
     cout << shear + ref << '\n';
     // cout << e1.length() << '\n';
     auto vec = Vector<double, 3>{4, 3, 12};
     cout << vec.length() << '\n';
     cout << vec.dot(vec) << '\n';
     // TODO
-    // cout << vec.T() * vec << '\n';
+    cout << vec.T() * vec << '\n';
+    cout << ref * e1 << '\n';
 
     return 0;
 }
