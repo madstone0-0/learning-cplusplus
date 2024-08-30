@@ -10,7 +10,7 @@ class SimpleString {
 
     SimpleString(const SimpleString& other) : size{other.size}, cArray{new char[other.size]} {
         std::copy(other.cArray, other.cArray + size, cArray);
-    }
+   }
 
     SimpleString& operator=(SimpleString other) {
         swap(other, *this);

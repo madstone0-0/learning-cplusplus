@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 
 project(Learning LANGUAGES CXX VERSION 1.0)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -11,26 +11,24 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++20")
-# set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -fsanitize=address")
-set(CMAKE_CXX_FLAGS_DEBUG "-ggdb")
+add_compile_options(-Wall -Wextra -Werror=return-type)
+set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -fsanitize=address")
+
 set(CMAKE_CXX_FLAGS_RELEASE "-Os -fno-ident")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-# add_compile_options(
-# "-Wall" "-Wextra" "-std=c++20" "-fmodules-ts" "-fconcepts"
-# "$<$<CONFIG:DEBUG>: -g3;-ggdb;-Os>"
-# "$<$<CONFIG:RELEASE>: -O3;-Os;-fno-ident>"
-#     )
+
 include_directories("src/Crash_Course/_includes")
 include_directories("src/Math/_includes")
+include_directories("src/Data_Structures/_includes")
 set(INCLUDE ${CMAKE_SOURCE_DIR}/src/Crash_Course/_includes)
+set(FUND_INC ${CMAKE_SOURCE_DIR}/src/Data_Structures/_includes)
+set(DS ${FUND_INC}/fundamental.hpp ${FUND_INC}/fundamental_interfaces.hpp)
 set(MATH_INC ${CMAKE_SOURCE_DIR}/src/Math/_includes)
 set(TIMER ${INCLUDE}/timer.hpp ${INCLUDE}/timer.cpp)
 set(TRACER ${INCLUDE}/tracer.hpp ${INCLUDE}/tracer.cpp)
 set(BYTE_HEADERS ${INCLUDE}/bytes.hpp ${INCLUDE}/bytes.cpp)
 set(STOPWATCH ${INCLUDE}/stopwatch.hpp)
 set(LINALG ${CMAKE_SOURCE_DIR}/src/Math/MLinalg)
-# file(GLOB_RECURSE HEADERS "src/_includes/*.hpp")
 
 #################
 # PkgConfig     #
@@ -66,12 +64,6 @@ include_directories(${IcecreamCpp_INCLUDE_DIRS})
 # Matplot++           #
 #######################
 find_package(Matplot++ REQUIRED)
-
-#################$
-# Origin Library #
-##################
-
-# include_directories("third_party/asutton/origin")
 
 #################
 # Boost Library #

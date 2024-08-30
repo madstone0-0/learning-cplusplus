@@ -8,3 +8,4 @@ tags
 .cmake
 .cache
 src/Math/Math-for-Programmers
+.python-version
