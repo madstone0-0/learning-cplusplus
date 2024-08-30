@@ -17,10 +17,19 @@ namespace Utils {
     template <typename T, typename U>
     auto sliceArray(const T& src, const size_t start, const size_t end);
 
+    template <typename Base, typename T>
+    bool instanceof (T * ptr);
+
     // template <typename T, typename U, size_t length>
     // auto sliceArray(const T* src, const size_t start, const size_t end);
 
 }  // namespace Utils
+
+template <typename Base, typename T>
+bool Utils:: instanceof (T * ptr) {
+    auto res = dynamic_cast<const Base*>(ptr) != nullptr;
+    return res;
+}
 
 template <typename Fn, typename In>
 constexpr bool Utils::all(Fn function, In* input, size_t length) {
