@@ -12,7 +12,7 @@ build_release() {
 build_debug() {
 	echo "Building Debug"
 	mkdir -p "$OUT_DIR"
-	CXX=g++ cmake -G 'Ninja' -S . -B "$OUT_DIR" -DCMAKE_BUILD_TYPE=Debug && ninja -C $OUT_DIR/ &>"$OUT_DIR".log
+	CXX=clang++ cmake -G 'Ninja' -S . -B "$OUT_DIR" -DCMAKE_BUILD_TYPE=Debug && ninja -C $OUT_DIR/ &>"$OUT_DIR".log
 }
 
 MODE="$1"

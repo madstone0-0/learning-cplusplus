@@ -1,6 +1,7 @@
 from matplotlib.patches import FancyArrowPatch
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import proj3d
+import numpy as np
 
 blue = "C0"
 black = "k"
@@ -14,14 +15,15 @@ gray = "gray"
 ## https://stackoverflow.com/a/22867877/1704140
 class FancyArrow3D(FancyArrowPatch):
     def __init__(self, xs, ys, zs, *args, **kwargs):
-        FancyArrowPatch.__init__(self, (0, 0), (0, 0), *args, **kwargs)
+        super().__init__((0, 0), (0, 0), *args, **kwargs)
         self._verts3d = xs, ys, zs
 
-    def draw(self, renderer):
+    def do_3d_projection(self, renderer=None):
         xs3d, ys3d, zs3d = self._verts3d
-        xs, ys, zs = proj3d.proj_transform(xs3d, ys3d, zs3d, renderer.M)
+        xs, ys, zs = proj3d.proj_transform(xs3d, ys3d, zs3d, self.axes.M)
         self.set_positions((xs[0], ys[0]), (xs[1], ys[1]))
-        FancyArrowPatch.draw(self, renderer)
+
+        return np.min(zs)
 
 
 class Polygon3D:
@@ -56,6 +58,12 @@ class Box3D:
         self.vector = vector
 
 
+def vectorable(v):
+    if type(v) == Vector3D:
+        yield v
+    yield v
+
+
 # helper function to extract all the vectors from a list of objects
 def extract_vectors_3D(objects):
     for object in objects:
@@ -64,7 +72,8 @@ def extract_vectors_3D(objects):
                 yield v
         elif type(object) == Points3D:
             for v in object.vectors:
-                yield v
+                vectorable(v)
+
         elif type(object) == Arrow3D:
             yield object.tip
             yield object.tail
@@ -136,6 +145,12 @@ def draw3d(
     for object in objects:
         if type(object) == Points3D:
             xs, ys, zs = zip(*object.vectors)
+            # xs, ys, zs = [], [], []
+            # for vec in object.vectors[0]:
+            #     xs += [vec[0]]
+            #     ys += [vec[1]]
+            #     zs += [vec[2]]
+
             ax.scatter(xs, ys, zs, color=object.color, depthshade=depthshade)
 
         elif type(object) == Polygon3D:
@@ -191,10 +206,123 @@ def draw3d(
     plt.show()
 
 
+class Vector3D:
+    def __init__(self, x, y, z) -> None:
+        self.x = x
+        self.y = y
+        self.z = z
+
+    def length(self) -> float:
+        return np.sqrt(sum(map(lambda x: x**2, self)))
+
+    def __iter__(self):
+        return (i for i in (self.x, self.y, self.z))
+
+    def __repr__(self) -> str:
+        className = type(self).__name__
+        return f"{className}({self.x:!r}, {self.y:!r}, {self.z:!r})"
+
+    def __str__(self) -> str:
+        return str(tuple(self))
+
+    def __add__(self, other):
+        try:
+            sums = [sum(coords) for coords in zip(self, other)]
+            return Vector3D(*sums)
+        except TypeError:
+            return NotImplemented
+
+    def __radd__(self, other):
+        return self + other
+
+    def __sub__(self, other):
+        try:
+            diffs = [c1 - c2 for c1, c2 in zip(self, other)]
+            return Vector3D(*diffs)
+        except TypeError:
+            return NotImplemented
+
+    def __rsub__(self, other):
+        return self - other
+
+    def __mul__(self, scalar):
+        try:
+            return Vector3D(*[i * scalar for i in self])
+        except TypeError:
+            return NotImplemented
+
+    def __rmul__(self, scalar):
+        return self * scalar
+
+    def __getitem__(self, key):
+        match key:
+            case 0:
+                return self.x
+            case 1:
+                return self.y
+            case 2:
+                return self.z
+            case _:
+                raise IndexError("Index not found")
+
+    def __len__(self):
+        return len(list(self))
+
+
 if __name__ == "__main__":
-    draw3d(
-        Points3D((2, 2, 2), (1, -2, -2)),
-        # Arrow3D((2, 2, 2)),
-        # Arrow3D((1, -2, -2)),
-        Segment3D((2, 2, 2), (1, -2, -2)),
+    # draw3d(
+    #     Points3D((2, 2, 2), (1, -2, -2)),
+    #     Arrow3D((2, 2, 2)),
+    #     Arrow3D((1, -2, -2)),
+    #     Segment3D((2, 2, 2), (1, -2, -2)),
+    #     Box3D(2, 2, 2),
+    #     Box3D(1, -2, -2),
+    # )
+
+    # draw3d(Points3D((-1, -2, 2)), Arrow3D((-1, -2, 2)), Box3D(-1, -2, 2))
+
+    pm1 = [1, -1]
+
+    # points = [
+    #     (1, 1, 1),
+    #     (1, 1, -1),
+    #     (1, -1, -1),
+    #     (1, -1, 1),
+    #     (-1, -1, -1),
+    #     (-1, -1, 1),
+    #     (-1, 1, 1),
+    #     (-1, 1, -1),
+    # ]
+    points = [Vector3D(x, y, z) for x in pm1 for y in pm1 for z in pm1]
+    segs = (
+        [((-1, y, z), (1, y, z)) for y in pm1 for z in pm1]
+        + [((x, -1, z), (x, 1, z)) for x in pm1 for z in pm1]
+        + [((x, y, -1), (x, y, 1)) for x in pm1 for y in pm1]
     )
+    # draw3d(Points3D(*points), *[Segment3D(*seg) for seg in segs])
+    things1 = [points[0], 4 * points[0] + points[2]]
+    things2 = [points[0], points[0] - points[2]]
+    # draw3d(
+    #     Points3D(*things1),
+    #     Arrow3D(*reversed(things1)),
+    #     Points3D(*things2),
+    #     # Arrow3D(*reversed(things2)),
+    #     Box3D(*things1[1]),
+    #     Box3D(*things2[1]),
+    # )
+    v1 = Vector3D(1, 1, 3)
+    v2 = Vector3D(2, 4, -4)
+    v3 = Vector3D(4, 2, -2)
+    vecs = (Vector3D(0, 0, 0), v1, v1 + v2, v1 + v2 + v3)
+
+    def staggerArrows(vecs):
+        vecs = [Vector3D(0, 0, 0)] + list(vecs)
+        return (Arrow3D(vecs[i], vecs[i - 1]) for i in range(1, len(vecs)))
+
+    # draw3d(
+    #     Points3D(*vecs[1:]),
+    #     *(Arrow3D(vecs[i], vecs[i - 1]) for i in range(1, len(vecs))),
+    #     *(Box3D(*vecs[i]) for i in range(1, len(vecs))),
+    # )
+    # draw3d(Points3D(v1, v1 * 2), *staggerArrows((v1, v1 * 2)))
+    print(Vector3D(4, 3, 12).length())

@@ -3,11 +3,13 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <iomanip>
 #include <iterator>
 #include <numeric>
 #include <optional>
 #include <ostream>
 #include <ranges>
+#include <sstream>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -35,6 +37,40 @@ namespace mlinalg::structures {
 
     template <Number number, size_t m, size_t n>
     using TransposeVariant = std::variant<Vector<number, m>, Matrix<number, n, m>>;
+
+    namespace helpers {
+        template <Number num, size_t m, size_t n>
+        Matrix<num, m, n> fromColVectorSet(const vector<Vector<num, m>>& vecSet) {
+            Matrix<num, m, n> res;
+            for (size_t i{}; i < n; i++) {
+                const auto& vec{vecSet.at(i)};
+                for (size_t j{}; j < m; j++) {
+                    res.at(j).at(i) = vec.at(j);
+                }
+            }
+            return res;
+        }
+
+        template <Number num, size_t m, size_t n>
+        Matrix<num, m, n> fromRowVectorSet(const vector<Vector<num, n>>& vecSet) {
+            Matrix<num, m, n> res;
+            for (size_t i{}; i < m; i++) {
+                res.at(i) = vecSet.at(i);
+            }
+            return res;
+        }
+
+        template <Number num, size_t m, size_t n>
+        Matrix<num, n, m> extractMatrixFromTranspose(const TransposeVariant<num, m, n> T) {
+            return std::get<Matrix<num, n, m>>(T);
+        }
+
+        template <Number num, size_t m, size_t n>
+        Matrix<num, n, m> extractVectorFromTranspose(const TransposeVariant<num, m, n> T) {
+            return std::get<Vector<num, m>>(T);
+        }
+
+    }  // namespace helpers
 
     /**
      * @brief Vector class for represeting both row and column vectors in n-dimensional space
@@ -92,12 +128,28 @@ namespace mlinalg::structures {
             return res;
         }
 
+        Vector<number, n>& operator+=(Vector<number, n> other) {
+            for (size_t i{}; i < n; i++) this->at(i) += other.at(i);
+            return *this;
+        }
+
         [[nodiscard]] size_t size() const { return n; }
 
         Vector<number, n> operator*(const number& scalar) const {
             Vector<number, n> res{};
             for (size_t i{}; i < n; i++) res.at(i) = scalar * this->at(i);
             return res;
+        }
+
+        Vector<number, n> operator/(const number& scalar) const {
+            Vector<number, n> res{};
+            for (size_t i{}; i < n; i++) res.at(i) = this->at(i) / scalar;
+            return res;
+        }
+
+        Vector<number, n>& operator*=(const number& scalar) {
+            for (size_t i{}; i < n; i++) this->at(i) *= scalar;
+            return *this;
         }
 
         template <size_t m>
@@ -135,18 +187,32 @@ namespace mlinalg::structures {
         constexpr auto rbegin() { return row.rbegin(); }
         constexpr auto rend() { return row.rend(); }
 
-        friend std::ostream& operator<<(std::ostream& os, const Vector<number, n>& row) {
+        explicit operator std::string() const {
+            std::stringstream ss{};
+
+            size_t maxWidth = 0;
+            for (const auto& elem : row) {
+                std::stringstream temp_ss;
+                temp_ss << elem;
+                maxWidth = std::max(maxWidth, temp_ss.str().length());
+            }
+
             if (row.size() == 1)
-                os << "[ " << row.at(0) << " ]\n";
+                ss << "[ " << std::setw(maxWidth) << row.at(0) << " ]\n";
             else
                 for (size_t i{}; i < row.size(); i++)
                     if (i == 0) {
-                        os << "⎡ " << row.at(i) << " ⎤\n";
+                        ss << "⎡ " << std::setw(maxWidth) << row.at(i) << " ⎤\n";
                     } else if (i == row.size() - 1) {
-                        os << "⎣ " << row.at(i) << " ⎦\n";
+                        ss << "⎣ " << std::setw(maxWidth) << row.at(i) << " ⎦\n";
                     } else {
-                        os << "| " << row.at(i) << " |\n";
+                        ss << "| " << std::setw(maxWidth) << row.at(i) << " |\n";
                     }
+            return ss.str();
+        }
+
+        friend std::ostream& operator<<(std::ostream& os, const Vector<number, n>& row) {
+            os << std::string(row);
             return os;
         }
 
@@ -159,25 +225,37 @@ namespace mlinalg::structures {
             const auto& size = row.size();
 
             auto hasVal = [](auto rowVal) {
-                std::string val{};
+                std::stringstream val;
                 if (rowVal.has_value())
-                    val = std::to_string(rowVal.value());
+                    val << rowVal.value();
                 else
-                    val = "None";
-                return val;
+                    val << "None";
+                return val.str();
             };
 
-            if (size == 1)
-                os << "[ " << (row.at(0).has_value() ? std::string{row.at(0).value()} : "None") << " ]\n";
-            else
+            size_t maxWidth = 0;
+            for (const auto& elem : row) {
+                std::stringstream temp_ss;
+                temp_ss << hasVal(elem);
+                maxWidth = std::max(maxWidth, temp_ss.str().length());
+            }
+
+            if (size == 1) {
+                os << "[ ";
+                if (row.at(0).has_value())
+                    os << row.at(0).value();
+                else
+                    os << "None";
+                os << " ]\n";
+            } else
                 for (size_t i{}; i < row.size(); i++) {
                     if (i == 0) {
-                        os << "⎡ " << hasVal(row.at(i)) << " ⎤\n";
+                        os << "⎡ " << std::setw(maxWidth) << hasVal(row.at(i)) << " ⎤\n";
                     } else if (i == row.size() - 1) {
-                        os << "⎣ " << hasVal(row.at(i)) << " ⎦\n";
+                        os << "⎣ " << std::setw(maxWidth) << hasVal(row.at(i)) << " ⎦\n";
 
                     } else {
-                        os << "| " << hasVal(row.at(i)) << " |\n";
+                        os << "| " << std::setw(maxWidth) << hasVal(row.at(i)) << " |\n";
                     }
                 }
             return os;
@@ -196,6 +274,12 @@ namespace mlinalg::structures {
     Vector<number, n> operator*(const number& scalar, Vector<number, n> vec) {
         return vec * scalar;
     }
+
+    template <Number number>
+    using Vector2 = mlinalg::structures::Vector<number, 2>;
+
+    template <Number number>
+    using Vector3 = mlinalg::structures::Vector<number, 3>;
 
     template <Number number, size_t n>
     using Row = Vector<number, n>;
@@ -269,7 +353,7 @@ namespace mlinalg::structures {
 
         template <size_t nOther>
         Matrix<number, m, nOther> operator*(const TransposeVariant<number, n, nOther> other) const {
-            return multMatByDef(extractMatrixFromTranspose(other));
+            return multMatByDef(helpers::extractMatrixFromTranspose(other));
         }
 
         Matrix& operator=(Matrix&& other) noexcept {
@@ -283,32 +367,48 @@ namespace mlinalg::structures {
 
         [[nodiscard]] size_t numCols() const { return m; }
 
-        friend std::ostream& operator<<(std::ostream& os, const Matrix<number, m, n>& system) {
-            const auto& nRows = system.numRows();
-            if (system.numRows() == 1) {
-                os << "[ ";
+        explicit operator std::string() const {
+            std::stringstream ss{};
+            const auto& nRows = this->numRows();
+
+            size_t maxWidth = 0;
+            for (const auto& row : matrix) {
+                for (const auto& elem : row) {
+                    std::stringstream temp_ss;
+                    temp_ss << elem;
+                    maxWidth = std::max(maxWidth, temp_ss.str().length());
+                }
+            }
+
+            if (this->numRows() == 1) {
+                ss << "[ ";
                 int i{};
-                for (const auto& elem : system.at(0)) os << " " << elem << " ";
-                os << "]\n";
+                for (const auto& elem : this->at(0)) ss << " " << std::setw(maxWidth) << elem << " ";
+                ss << "]\n";
             } else {
                 int i{};
-                for (const auto& row : system.matrix) {
+                for (const auto& row : this->matrix) {
                     if (i == 0) {
-                        os << "⎡";
-                        for (const auto& elem : row) os << " " << elem << " ";
-                        os << "⎤\n";
+                        ss << "⎡";
+                        for (const auto& elem : row) ss << " " << std::setw(maxWidth) << elem << " ";
+                        ss << "⎤\n";
                     } else if (i == nRows - 1) {
-                        os << "⎣";
-                        for (const auto& elem : row) os << " " << elem << " ";
-                        os << "⎦\n";
+                        ss << "⎣";
+                        for (const auto& elem : row) ss << " " << std::setw(maxWidth) << elem << " ";
+                        ss << "⎦\n";
                     } else {
-                        os << "|";
-                        for (const auto& elem : row) os << " " << elem << " ";
-                        os << "|\n";
+                        ss << "|";
+                        for (const auto& elem : row) ss << " " << std::setw(maxWidth) << elem << " ";
+                        ss << "|\n";
                     }
                     i++;
                 }
             }
+            return ss.str();
+        }
+
+        friend std::ostream& operator<<(std::ostream& os, const Matrix<number, m, n>& system) {
+            os << std::string(system);
             return os;
         }
 
@@ -364,27 +464,6 @@ namespace mlinalg::structures {
         constexpr auto rbegin() { return matrix.rbegin(); }
         constexpr auto rend() { return matrix.rend(); }
 
-        template <Number num, size_t mN, size_t nN>
-        static Matrix<num, mN, nN> fromColVectorSet(const vector<Vector<num, mN>>& vecSet) {
-            Matrix<num, mN, nN> res;
-            for (size_t i{}; i < nN; i++) {
-                const auto& vec{vecSet.at(i)};
-                for (size_t j{}; j < mN; j++) {
-                    res.at(j).at(i) = vec.at(j);
-                }
-            }
-            return res;
-        }
-
-        template <Number num, size_t mN, size_t nN>
-        static Matrix<num, mN, nN> fromRowVectorSet(const vector<Vector<num, nN>>& vecSet) {
-            Matrix<num, mN, nN> res;
-            for (size_t i{}; i < mN; i++) {
-                res.at(i) = vecSet.at(i);
-            }
-            return res;
-        }
-
         template <size_t nN>
         Matrix<number, m, nN + n> augment(const Matrix<number, m, nN>& other) const {
             Matrix<number, m, nN + n> res{};
@@ -416,7 +495,111 @@ namespace mlinalg::structures {
             return res;
         }
 
+        number det() const {
+            if (m != n) throw std::runtime_error("Finding determinant of rectangular matrices not implemented");
+            if constexpr (m == 2 && n == 2)
+                return det2x2();
+            else
+                return cofactor();
+        }
+
+        Matrix<number, m - 1, n - 1> subset(std::optional<size_t> i, std::optional<size_t> j) const {
+            static_assert(m == n, "Not a square matrix");
+            static_assert(m > 1 && n > 1, "Cannot subset");
+
+            Matrix<number, m - 1, n - 1> res{};
+            size_t resRow = 0;
+            for (size_t k = 0; k < m; ++k) {
+                if (i.has_value() && i.value() == k) continue;  // Skip the row to be removed
+
+                size_t resCol = 0;
+                for (size_t z = 0; z < n; ++z) {
+                    if (j.has_value() && j.value() == z) continue;  // Skip the column to be removed
+
+                    res.at(resRow).at(resCol) = this->at(k).at(z);
+                    ++resCol;
+                }
+                ++resRow;
+            }
+            return res;
+        }
+
        private:
+        number det2x2() const {
+            return (this->at(0).at(0) * this->at(1).at(1)) - (this->at(0).at(1) * this->at(1).at(0));
+        }
+
+        enum By { ROW = 0, COL };
+
+        std::pair<By, size_t> pickCofactorRowOrCol() const {
+            size_t maxRowZeros{};
+            size_t rowPos{};
+
+            size_t maxColZeros{};
+            size_t colPos{};
+
+            int pos{};
+            for (const auto& row : *this) {
+                auto count = rg::count_if(row, [](auto x) { return x == 0; });
+                if (count > maxRowZeros) {
+                    maxRowZeros = count;
+                    rowPos = pos;
+                }
+                pos++;
+            }
+
+            pos = 0;
+            for (const auto& col : colToVectorSet()) {
+                auto count = rg::count_if(col, [](auto x) { return x == 0; });
+                if (count > maxColZeros) {
+                    maxColZeros = count;
+                    colPos = pos;
+                }
+                pos++;
+            }
+
+            if (maxColZeros >= maxRowZeros)
+                return {COL, colPos};
+            else
+                return {ROW, rowPos};
+        }
+
+        constexpr number cofactorCommon(size_t i, size_t j) const {
+            number res{};
+            auto a = this->at(i).at(j);
+            if (a == 0) return 0;
+            auto A_ij = this->subset(i, j);
+            auto C = ((int)std::pow(-1, ((i + 1) + (j + 1)))) * A_ij.det();
+            res += a * C;
+            return res;
+        }
+
+        constexpr number cofactorRow(size_t row) const {
+            number res{};
+            size_t i{row};
+            for (size_t j{0}; j < n; j++) {
+                res += cofactorCommon(i, j);
+            }
+            return res;
+        }
+
+        constexpr number cofactorCol(size_t col) const {
+            number res{};
+            size_t j{col};
+            for (size_t i{0}; i < n; i++) {
+                res += cofactorCommon(i, j);
+            }
+            return res;
+        }
+
+        constexpr number cofactor() const {
+            auto [by, val] = pickCofactorRowOrCol();
+            if (by == ROW)
+                return cofactorRow(val);
+            else
+                return cofactorCol(val);
+        }
+
         Vector<number, m> multMatByVec(Vector<number, n> vec) const {
             Vector<number, m> res{};
             auto asCols{colToVectorSet()};
@@ -435,6 +618,7 @@ namespace mlinalg::structures {
 
             return res;
         }
+
         template <size_t nOther>
         Matrix<number, m, nOther> multMatByDef(const Matrix<number, n, nOther>& other) const {
             auto otherColVecSet{other.colToVectorSet()};
@@ -444,7 +628,7 @@ namespace mlinalg::structures {
                 auto multRes = *this * col;
                 res.push_back(multRes);
             }
-            return Matrix::fromColVectorSet<number, m, nOther>(res);
+            return helpers::fromColVectorSet<number, m, nOther>(res);
         }
 
         friend void swap(Matrix& first, Matrix& second) noexcept {

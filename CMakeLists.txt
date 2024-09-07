@@ -30,6 +30,8 @@ set(BYTE_HEADERS ${INCLUDE}/bytes.hpp ${INCLUDE}/bytes.cpp)
 set(STOPWATCH ${INCLUDE}/stopwatch.hpp)
 set(LINALG ${CMAKE_SOURCE_DIR}/src/Math/MLinalg)
 
+include(FetchContent)
+
 #################
 # PkgConfig     #
 #################
@@ -64,6 +66,53 @@ include_directories(${IcecreamCpp_INCLUDE_DIRS})
 # Matplot++           #
 #######################
 find_package(Matplot++ REQUIRED)
+
+#######################
+# SDL2                #
+#######################
+find_package(SDL2 REQUIRED)
+pkg_search_module(SDL2_IMAGE REQUIRED SDL2_image IMPORTED_TARGET)
+pkg_search_module(SDL2_MIXER REQUIRED SDL2_mixer IMPORTED_TARGET)
+pkg_search_module(SDL2_GFX REQUIRED SDL2_gfx IMPORTED_TARGET)
+
+#################
+# SFML          #
+#################
+set(SFML_DIR "/usr/lib/cmake/SFML") # Move this above find_package
+# set(BUILD_SHARED_LIBS OFF) # Disable shared libs
+# set(SFML_STATIC_LIBRARIES TRUE)
+find_package(SFML 2.5 COMPONENTS graphics system window REQUIRED CONFIG)
+
+######################
+# ImGui & ImGui-Sfml #
+######################
+set(IMGUI_VERSION 1.91.0)
+# set(IMGUI_SFML_VERSION 2.3)
+
+# FetchContent_Declare(
+#     imgui
+#     URL "https://github.com/ocornut/imgui/archive/v${IMGUI_VERSION}.zip"
+# )
+#
+# # Or by tag...
+# FetchContent_Declare(
+#     imgui-sfml
+#     GIT_REPOSITORY https://github.com/SFML/imgui-sfml.git
+#     GIT_TAG 2.6.x
+# )
+
+# Dear ImGui
+# FetchContent_MakeAvailable(imgui)
+set(IMGUI_DIR "/usr/include")
+find_package(imgui REQUIRED)
+
+# ImGui-SFML
+set(IMGUI_DIR ${imgui_SOURCE_DIR})
+option(IMGUI_SFML_FIND_SFML "Use find_package to find SFML" OFF)
+option(IMGUI_SFML_IMGUI_DEMO "Build imgui_demo.cpp" OFF)
+
+find_package(ImGui-SFML REQUIRED CONFIG)
+# FetchContent_MakeAvailable(imgui-sfml)
 
 #################
 # Boost Library #

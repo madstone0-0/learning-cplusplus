@@ -34,9 +34,6 @@ namespace mlinalg {
 
     template <Number number, size_t m, size_t n>
     bool isInconsistent(LinearSystem<number, m, n> system) {
-        // const auto& lastRow = system.back();
-        // auto count = std::count(lastRow.begin(), lastRow.end() - 1, 0);
-        // return m <= n - 1 && (count == n - 1 && lastRow.back() != 0);
         for (const auto& row : system) {
             size_t zeroCount{};
             for (size_t i{}; i < n - 1; i++)
@@ -69,14 +66,15 @@ namespace mlinalg {
             }
         }
         leftSide = vector{leftSide.at(varPos)};
-        auto rightSimpl = std::accumulate(rightSide.begin(), rightSide.end(), 0);
+        auto rightSimpl = std::accumulate(rightSide.begin(), rightSide.end(), number{0});
         if (leftSide.at(0) == 0) {
             if (rightSimpl == 0 && leftSide.at(0) == 0)
                 return 0;
             else
                 return std::nullopt;
         }
-        number sol = static_cast<double>(rightSimpl) / leftSide.at(0);
+        // number sol = static_cast<double>(rightSimpl) / leftSide.at(0);
+        number sol = rightSimpl / leftSide.at(0);
         return sol;
     }
 
@@ -158,7 +156,8 @@ namespace mlinalg {
                     if (lower == 0) continue;
                     if (pivot == 0) continue;
 
-                    auto permute = static_cast<double>(lower) / pivot.value();
+                    // auto permute = static_cast<double>(lower) / pivot.value();
+                    auto permute = lower / pivot.value();
                     auto rowItems = system.at(j);
                     Row<number, n> permuted{permute * system.at(i)};
                     auto newRow = permuted - rowItems;
@@ -189,7 +188,8 @@ namespace mlinalg {
 
     template <Number number, size_t m, size_t n>
     LinearSystem<number, m, n> ref(LinearSystem<number, m, n> system) {
-        if (m == n) return refSq(system);
+        if constexpr (m == n && m > 5) return refRec(system);
+        if constexpr (m == n) return refSq(system);
         return refRec(system);
     }
 
@@ -246,7 +246,7 @@ namespace mlinalg {
                     if (upper == 0) continue;
                     if (pivot == 0) continue;
 
-                    auto permute = static_cast<double>(upper) / pivot.value();
+                    auto permute = upper / pivot.value();
                     auto rowItems = system.at(j);
                     Row<number, n> permuted{permute * system.at(i)};
                     auto newRow = permuted - rowItems;
@@ -260,7 +260,7 @@ namespace mlinalg {
                 try {
                     const auto& pivot{system.at(i).at(i)};
                     if (pivot == 0) continue;
-                    if (pivot != 1) system.at(i) = system.at(i) * (1. / pivot);
+                    if (pivot != 1) system.at(i) = system.at(i) * (1 / pivot);
                 } catch (const std::out_of_range& e) {
                     continue;
                 }
@@ -271,6 +271,7 @@ namespace mlinalg {
 
     template <Number number, size_t m, size_t n>
     LinearSystem<number, m, n> rref(LinearSystem<number, m, n> system, bool identity = true) {
+        if (m == n && m > 5) return rrefRec(system, identity);
         if (m == n) return rrefSq(system, identity);
         return rrefRec(system, identity);
     }
@@ -316,6 +317,23 @@ namespace mlinalg {
             identity.at(i).at(i) = 1;
         }
         return identity;
+    }
+
+    template <Number number, size_t m, size_t n>
+    optional<Matrix<number, m, n>> inverse(const LinearSystem<number, m, n>& system) {
+        auto det = system.det();
+        if (det == 0) return std::nullopt;
+        if (m == 2 && n == 2)
+            return (1 / det) * Matrix<number, m, n>{{system.at(1).at(1), -system.at(0).at(1)},
+                                                    {-system.at(1).at(0), system.at(0).at(0)}};
+        else {
+            auto identity = I<number, m>();
+            auto augmented = system.augment(identity);
+            auto rrefAug = rref(augmented);
+            auto inv = rrefAug.colToVectorSet();
+            inv.erase(inv.begin(), inv.begin() + m);
+            return mlinalg::structures::helpers::fromColVectorSet<number, m, n>(inv);
+        }
     }
 
 }  // namespace mlinalg

@@ -101,7 +101,7 @@ int main() {
 
     auto symmetric = Matrix<double, 3, 3>{{1, 2, 3}, {2, 4, 5}, {3, 5, 6}};
 
-    auto sys20 = LinearSystem<double, 3, 6>{
+    auto sys20 = LinearSystem<rational<long long>, 3, 6>{
         {-3, 6, -1, 1, -7, 0},
         {1, -2, 2, 3, -1, 0},
         {2, -4, 5, 8, -4, 0},
@@ -119,8 +119,8 @@ int main() {
     cout << sys1.T() << "\n";
     printSol(sys6);
     printSol(sys7);
-    cout << sys1.augment(sys4) << "\n";
-    cout << sys1.augment(Vector<double, 3>{1, 2, 3}) << "\n";
+    // cout << sys1.augment(sys4) << "\n";
+    // cout << sys1.augment(Vector<double, 3>{1, 2, 3}) << "\n";
     printSol(Matrix<double, 3, 3>{{1, -2, 1}, {0, 2, -8}, {5, 0, -5}}, Vector<double, 3>{0, 8, 10});
     cout << sys1.T() << "\n";
     cout << sys1 << '\n';
