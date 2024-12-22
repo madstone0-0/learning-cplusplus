@@ -5,8 +5,12 @@
 ScreenPtr Screen::instance{};
 
 ScreenPtr& Screen::Instance() {
-    // if (!instance) instance = ScreenPtr{new Screen{std::make_unique<SFML_Backend>()}};
+    static bool firstCall{true};
     if (!instance) instance = ScreenPtr{new Screen{}};
+    if (firstCall) {
+        firstCall = false;
+        std::atexit(cleanupImGui);
+    }
     return instance;
 }
 
@@ -27,11 +31,13 @@ bool Screen::init(const std::string& title, Vector2<int> dim, bool fullscreen, d
     border.setOrigin(borderXMin, borderYMin);
     border.setSize({borderXMax, borderYMax});
     // for (int i{}; i < 10; i++) addRandomParticle();
-    this->dt = dt;
+    physics->setWinDim(borderXMin, borderXMax, borderYMin, borderYMax);
+    physics->dt = dt;
     create();
     running = true;
     cout << std::format("Created window with FPS: {} and Dimensions:\n{}", framerate, std::string{dim});
-    return ImGui::SFML::Init(*win);
+    isInitialized = ImGui::SFML::Init(*win);
+    return isInitialized;
 }
 
 void Screen::create() {
@@ -53,275 +59,6 @@ void Screen::toggleFullscreen() {
     create();
 }
 
-Vector2<double> Screen::collisionResponse(const Vector2<double>& v, const Vector2<double>& n) const {
-    // velocity after collision = velocity - (1 + elasticity) * normal * (velocity dot normal)
-    // This inverts the velocity component that is perpendicular to the normal
-    // Taking into account friction velocity after collision is now
-    // velocity - (1 + elasticity) * normal velocity - friction coefficient * tangential velocity * time step
-    // Where normal velocity = normal * (velocity * normal) and
-    // tangential velocity = velocity - normal velocity
-    auto vn = n * (v * n).at(0);
-    auto vt = v - vn;
-    return v - (1 + e) * vn - frictionCoef * vt * dt;
-}
-
-void Screen::handleBoxCollision(const PartPtr& particle) {
-    const auto& pos = particle->gPos();
-    const auto& vel = particle->gVel();
-    const auto& radius = particle->gRadius();
-
-    // Left wall collision
-    if (pos.at(0) - radius <= borderXMin) {
-        if ((vel * nL).at(0) < 0) {  // Check if the object is moving towards the wall
-            auto newVel = collisionResponse(vel, nL);
-            particle->sVel(newVel);
-
-            auto depth = -(pos.at(0) - radius);
-            particle->sPos(pos + nL * depth);
-        }
-    }
-
-    // Right wall collision
-    if (pos.at(0) + radius >= borderXMax) {
-        if ((vel * nR).at(0) < 0) {  // Check if the object is moving towards the wall
-            auto newVel = collisionResponse(vel, nR);
-            particle->sVel(newVel);
-
-            auto depth = (pos.at(0) - radius) - borderXMax + radius * 2;
-            particle->sPos(pos + nR * depth);
-        }
-    }
-
-    // Bottom wall collision
-    if (pos.at(1) + radius >= borderYMax) {
-        if ((vel * nB).at(0) < 0) {  // Check if the object is moving towards the wall
-            auto newVel = collisionResponse(vel, nB);
-            particle->sVel(newVel);
-
-            auto depth = (pos.at(1) - radius) - borderYMax + radius * 2;
-            particle->sPos(pos + nB * depth);
-        }
-    }
-
-    // Top wall collision
-    if (pos.at(1) - radius <= borderYMin) {
-        if ((vel * nT).at(0) < 0) {  // Check if the object is moving towards the wall
-            auto newVel = collisionResponse(vel, nT);
-            particle->sVel(newVel);
-
-            auto depth = -(pos.at(1) - radius);
-            particle->sPos(pos + nT * depth);
-        }
-    }
-}
-
-std::vector<PartPtr> Screen::sweepAndPrune(const PartPtr& particle, bool xAxis) {
-    std::vector<PartPtr> activeIntervals;
-    const auto& pos = particle->gPos();
-    const auto& radius = particle->gRadius();
-    activeIntervals.reserve(particles.size());
-    activeIntervals.push_back(particle);
-    for (const auto& otherParticle : particles) {
-        if (particle == otherParticle) continue;
-
-        const auto& otherPos = otherParticle->gPos();
-        const auto& otherRadius = otherParticle->gRadius();
-
-        int axisIndex = xAxis ? 0 : 1;
-        if (pos.at(axisIndex) + radius >= otherPos.at(axisIndex) - otherRadius) {
-            activeIntervals.push_back(otherParticle);
-        } else {
-            // Since particles are sorted, we can break early once we find a non-overlapping interval
-            break;
-        }
-    }
-    return activeIntervals;
-}
-
-std::vector<std::vector<PartPtr>> Screen::sweepAndPrune(bool xAxis) {
-    std::vector<std::vector<PartPtr>> res;
-    std::sort(particles.begin(), particles.end(), [&xAxis](const PartPtr& a, const PartPtr& b) {
-        if (xAxis) {
-            return a->gPos().at(0) < b->gPos().at(0);
-        } else {
-            return a->gPos().at(1) < b->gPos().at(1);
-        }
-    });
-
-    std::vector<PartPtr> activeIntervals;
-    for (const auto& particle : particles) {
-        const auto& pos = particle->gPos();
-        const auto& radius = particle->gRadius();
-        activeIntervals.erase(
-            std::remove_if(activeIntervals.begin(), activeIntervals.end(),
-                           [&](const PartPtr& p) {
-                               const auto& otherPos = p->gPos();
-                               const auto& otherRadius = p->gRadius();
-                               int axisIndex = xAxis ? 0 : 1;
-                               return (pos.at(axisIndex) - radius > otherPos.at(axisIndex) + otherRadius);
-                           }),
-            activeIntervals.end());
-        activeIntervals.push_back(particle);
-        if (activeIntervals.size() > 1) res.push_back(activeIntervals);
-    }
-
-    return res;
-}
-
-std::vector<std::vector<PartPtr>> Screen::uniSpacePartitioning(size_t gridSpace) {
-    // Make grid from screen
-    vector<vector<PartPtr>> res;
-    using std::vector;
-    auto rows = (size_t)std::ceil(dim.at(1) / (double)gridSpace);
-    auto cols = (size_t)std::ceil(dim.at(0) / (double)gridSpace);
-    // cout << std::format("Rows: {}, Cols: {}\n", rows, cols);
-    vector<vector<vector<PartPtr>>> grid(rows, vector<vector<PartPtr>>(cols, vector<PartPtr>{}));
-
-    // Assign particles to cells
-    for (const auto& particle : particles) {
-        const auto& pos = particle->gPos();
-        auto row = std::min((size_t)pos.at(1) / gridSpace, rows - 1);
-        auto col = std::min((size_t)pos.at(0) / gridSpace, cols - 1);
-        grid[row][col].push_back(particle);
-    }
-
-    // Only particles in the same cells should be checked for collisions
-    res.reserve(rows * cols);
-    for (size_t i{}; i < rows; i++) {
-        for (size_t j{}; j < cols; j++) {
-            if (grid[i][j].size() > 1) res.push_back(grid[i][j]);
-        }
-    }
-    return res;
-}
-
-void Screen::buildKdTree(ParticleGroups& groups, std::vector<PartPtr>& particles, bool xAxis) {
-    if (particles.size() <= 20) {
-        if (particles.size() > 1) groups.push_back(particles);
-        return;
-    }
-
-    // Find the median index
-    size_t median = particles.size() / 2;
-
-    std::nth_element(
-        particles.begin(), particles.begin() + median, particles.end(), [xAxis](const PartPtr& a, const PartPtr& b) {
-            return (xAxis ? a->gPos().at(0) : a->gPos().at(1)) < (xAxis ? b->gPos().at(0) : b->gPos().at(1));
-        });
-
-    // Split into left and right subgroups
-    std::vector<PartPtr> left(particles.begin(), particles.begin() + median);
-    std::vector<PartPtr> right(particles.begin() + median + 1, particles.end());
-
-    // Recurse on left and right groups along the next axis
-    buildKdTree(groups, left, !xAxis);
-    buildKdTree(groups, right, !xAxis);
-}
-
-ParticleGroups Screen::kdTree(bool xAxis) {
-    std::vector<std::vector<PartPtr>> res;
-    buildKdTree(res, particles, false);
-    return res;
-}
-
-void Screen::handleParticleCollision() {
-    // auto particleGroups = sweepAndPrune();
-    auto particleGroups = uniSpacePartitioning();
-    // auto particleGroups = kdTree();
-
-    for (const auto& particles : particleGroups) {
-        handleParticleCollision(particles.at(0), particles);
-    }
-}
-
-void Screen::handleParticleCollision(const PartPtr& particle, const std::vector<PartPtr>& particles) {
-    for (const auto& otherParticle : particles) {
-        if (otherParticle == particle) continue;
-        const auto epsilon{1e-5};
-        const auto epsilonVector{epsilon * Vector2<double>{1, 1}};
-
-        const auto& pos = particle->gPos();
-        const auto& otherPos = otherParticle->gPos();
-        const auto& radius = particle->gRadius();
-        const auto& otherRadius = otherParticle->gRadius();
-
-        const auto& vel = particle->gVel();
-        const auto& otherVel = otherParticle->gVel();
-        const auto& mass = particle->gMass();
-        const auto& otherMass = otherParticle->gMass();
-
-        if (pos.dist(otherPos) <= radius + otherRadius) {
-            // Collision
-            // auto posDiff1{otherPos - pos};
-            // auto posDiff2{pos - otherPos};
-            // auto n1 = posDiff1 / posDiff1.length();
-            // auto n2 = posDiff2 / posDiff2.length();
-            // auto dV = otherVel - vel;
-            // auto vn1 = n1 * (dV * n1).at(0);
-            // auto vn2 = n2 * (dV * n2).at(0);
-            // auto vt1 = vel - vn1;
-            // auto vt2 = otherVel - vn2;
-            // auto d1 = 2 * radius - posDiff1.length();
-            // auto d2 = 2 * otherRadius - posDiff2.length();
-            //
-            // auto newVel = vel + vn1 * (1 + e) / 2 + frictionCoef * vt1 * dt / 2;
-            // auto p1 = pos - n1 * d1 / 2;
-            //
-            // auto newVelOther = otherVel - vn2 * (1 + e) / 2 - frictionCoef * vt2 * dt / 2;
-            // auto p2 = otherPos - n2 * d2 / 2;
-            //
-            // particle->sVel(newVel);
-            // particle->sPos(p1);
-            // otherParticle->sVel(newVelOther);
-            // otherParticle->sPos(p2);
-
-            auto posDiff1{otherPos - pos};
-            auto posDiff2{pos - otherPos};
-            auto n1 = posDiff1 / (posDiff1.length() + epsilon);
-            auto n2 = posDiff2 / (posDiff2.length() + epsilon);
-            auto d1 = 2 * radius - posDiff1.length();
-            auto d2 = 2 * otherRadius - posDiff2.length();
-
-            auto massComponent = (2 * otherMass) / ((mass + otherMass) + epsilon);
-            auto centerDiff = pos - otherPos;
-            auto vCInner = (vel - otherVel) * centerDiff;
-            auto centerDiffNorm = centerDiff.length();
-            auto newVel = vel - static_cast<double>(massComponent) *
-                                    (vCInner / ((centerDiffNorm * centerDiffNorm) + epsilon)).at(0) * centerDiff;
-            auto p1 = pos - n1 * d1 / 2;
-
-            auto massComponentOther = (2 * mass) / ((mass + otherMass) + epsilon);
-            auto centerDiffOther = otherPos - pos;
-            auto vCInnerOther = (otherVel - vel) * centerDiffOther;
-            auto centerDiffNormOther = centerDiffOther.length();
-            auto newVelOther =
-                otherVel - static_cast<double>(massComponentOther) *
-                               (vCInnerOther / ((centerDiffNormOther * centerDiffNormOther) + epsilon)).at(0) *
-                               centerDiffOther;
-            auto p2 = otherPos - n2 * d2 / 2;
-
-            auto velDiff1 = newVel - newVelOther;
-            auto normComp1 = (n1 * (velDiff1)).at(0) * n1;
-            auto tanComp1 = vel - normComp1;
-            auto tanVelWF1 = tanComp1 * (1 - frictionCoef);
-            auto newVelWF = normComp1 + tanVelWF1;
-
-            auto velDiff2 = newVelOther - newVel;
-            auto normComp2 = (n2 * (velDiff2)).at(0) * n2;
-            auto tanComp2 = vel - normComp2;
-            auto tanVelWF2 = tanComp2 * (1 - frictionCoef);
-            auto newVelOtherWF = normComp2 + tanVelWF2;
-
-            // particle->sVel(newVel);
-            particle->sVel(newVelWF);
-            particle->sPos(p1);
-            otherParticle->sVel(newVelOtherWF);
-            // otherParticle->sVel(newVelOther);
-            otherParticle->sPos(p2);
-        }
-    }
-}
-
 void Screen::cullOutOfBoundsParticles() {
     if (!cull) return;
     for (auto it = particles.begin(); it != particles.end();) {
@@ -338,11 +75,11 @@ void Screen::cullOutOfBoundsParticles() {
 
 void Screen::update() {
     for (auto& part : particles) {
-        handleBoxCollision(part);
+        physics->handleBoxCollision(part);
 
-        part->update(dt);
+        part->update(physics->dt);
     }
-    handleParticleCollision();
+    physics->handleParticleCollision();
 
     for (auto& spring : springs) spring->update();
 
@@ -355,6 +92,7 @@ void Screen::update() {
         borderXMax = dim.at(0);
         borderYMax = dim.at(1);
         border.setSize({borderXMax, borderYMax});
+        physics->setWinDim(borderXMin, borderXMax, borderYMin, borderYMax);
     }
 }
 
@@ -377,12 +115,12 @@ void Screen::addRandomParticle() {
 }
 
 void Screen::addParticle(const Vector2<double>& pos, const Vector2<double>& vel, int mass) {
-    particles.emplace_back(std::make_unique<Particle>(pos, vel, mass, gravity));
+    particles.emplace_back(std::make_unique<Particle>(pos, vel, mass, physics->gravity));
     numParticles++;
 }
 
 void Screen::addParticle(const Vector2<double>& pos, const Vector2<double>& vel, int mass, sf::Color color) {
-    particles.emplace_back(std::make_unique<Particle>(pos, vel, mass, gravity, color));
+    particles.emplace_back(std::make_unique<Particle>(pos, vel, mass, physics->gravity, color));
     numParticles++;
 }
 
@@ -424,14 +162,33 @@ void Screen::renderUI() {
 
     ImGui::Begin("Particles");
     ImGui::Text("Particles: %zu", numParticles);
-    ImGui::Text("dt: %f", dt);
+    ImGui::Text("dt: %f", physics->dt);
     ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
-    ImGui::InputDouble("dt", &dt, dt, 0.1, "%.2f");
+    ImGui::InputDouble("dt", &(physics->dt), physics->dt, 0.1, "%.2f");
 
     ImGui::Checkbox("Cull Out of Bounds particles", &cull);
 
     if (ImGui::Checkbox("Place Mode", &placeMode)) {
         springMode = false;
+    }
+
+    // Collision Detection Method
+    std::vector<std::string> methodStrings;
+    methodStrings.reserve(4);
+    for (int i = 0; i < 4; i++) {
+        methodStrings.push_back(parseCollisionMethods(static_cast<CollisionDetection>(i)));
+    }
+
+    // Convert to vector of const char* for ImGui
+    std::vector<const char*> items;
+    items.reserve(methodStrings.size());
+    for (const auto& str : methodStrings) {
+        items.push_back(str.c_str());
+    }
+
+    int currentItem = static_cast<int>(physics->collisionMethod);
+    if (ImGui::Combo("Collision Method", &currentItem, items.data(), items.size())) {
+        physics->collisionMethod = static_cast<CollisionDetection>(currentItem);
     }
 
     // Border Control
@@ -453,14 +210,14 @@ void Screen::renderUI() {
     }
 
     // Change coefficient of friction
-    ImGui::InputDouble("Friction Coefficient", &frictionCoef, 0.1, 10.0, "%.2f");
+    ImGui::InputDouble("Friction Coefficient", &(physics->frictionCoef), 0.1, 10.0, "%.2f");
 
     // Change gravity
-    ImGui::InputDouble("Gravity X", &gravity.at(0), 0.1, 1.0, "%.2f");
-    ImGui::InputDouble("Gravity Y", &gravity.at(1), 0.1, 1.0, "%.2f");
+    ImGui::InputDouble("Gravity X", &(physics->gravity.at(0)), 0.1, 1.0, "%.2f");
+    ImGui::InputDouble("Gravity Y", &(physics->gravity.at(1)), 0.1, 1.0, "%.2f");
 
     // Change elasticity
-    ImGui::InputDouble("Elasticity", &e, 0.1, 1.0, "%.2f");
+    ImGui::InputDouble("Elasticity", &(physics->e), 0.1, 1.0, "%.2f");
 
     // Change new particle values
     ImGui::InputDouble("New Particle Vel X", &newParticleVel.at(0), 0.1, 1.0, "%.2f");
@@ -528,15 +285,15 @@ void Screen::handleEvents() {
         else if (e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::Space)
             for (int i{}; i < 10; i++) addRandomParticle();
         else if (e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::Period) {
-            dt += step;
-            if (dt > maxDt) {
-                dt = maxDt;
+            physics->dt += step;
+            if (physics->dt > maxDt) {
+                physics->dt = maxDt;
             }
             // std::cout << std::format("dt: {}\n", dt);
         } else if (e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::Comma) {
-            dt -= step;
-            if (dt < minDt) {
-                dt = minDt;
+            physics->dt -= step;
+            if (physics->dt < minDt) {
+                physics->dt = minDt;
             }
             // std::cout << std::format("dt: {}\n", dt);
         }
@@ -600,17 +357,18 @@ void Screen::handleEvents() {
 
 void Screen::quit() { running = false; }
 
+void Screen::cleanupImGui() {
+    auto& instance = Screen::Instance();
+    if (instance->isInitialized && instance->win) {
+        ImGui::SFML::Shutdown(*instance->win);
+        instance->isInitialized = false;
+    }
+}
+
 void Screen::clean() {
     if (win) {
-        // Close the window before shutdown
-        win->close();
-
-        // Shutdown ImGui for this specific window
-        ImGui::SFML::Shutdown(*win);
-
-        // Let the unique_ptr handle deletion
-        win.reset();
-
+        win->close();  // Then close the window
+        win.reset();   // Finally reset the pointer
         cout << "Cleaned Screen\n";
     }
 }

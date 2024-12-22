@@ -11,6 +11,7 @@
 
 #include "InputHandler.hpp"
 #include "Particle.hpp"
+#include "Physics.hpp"
 #include "SFML_utils.hpp"
 #include "Spring.hpp"
 #include "imgui.h"
@@ -28,6 +29,7 @@ class Screen {
     void update();
     void render();
     void handleEvents();
+    static void cleanupImGui();
     void clean();
     void quit();
     void addParticle(const Vector2<double>& pos, const Vector2<double>& vel, int mass, sf::Color color);
@@ -48,10 +50,14 @@ class Screen {
     [[nodiscard]] size_t getNumParticles() const { return numParticles; }
     sf::Time getElapsed() { return elapsed; }
     void restartClock() { elapsed = clock.restart(); }
+
     ~Screen() { clean(); }
+    Screen(const Screen&) = delete;
+    Screen& operator=(const Screen&) = delete;
 
    private:
     // Class methods
+    bool isInitialized{false};
     Screen() = default;
     void create();
     void destroy();
@@ -68,13 +74,12 @@ class Screen {
     bool running{};
     sf::RectangleShape border;
 
+    // Physics
+    PhysicsType physics{new SimplePhysics(0.0, particles, dim)};
+
     // Particle methods
     void addRandomParticle();
     void purgeParticles(int targetNumParticles);
-    [[nodiscard]] Vector2<double> collisionResponse(const Vector2<double>& v, const Vector2<double>& n) const;
-    void handleBoxCollision(const PartPtr& particle);
-    void handleParticleCollision();
-    void handleParticleCollision(const PartPtr& particle, const std::vector<PartPtr>& particles);
     void cullOutOfBoundsParticles();
     void selectParticle(
         PartPtr& selection, const Callback& endCallback = [](PartPtr& particle) {
@@ -82,21 +87,9 @@ class Screen {
             particle = nullptr;
         });
 
-    // Broad-phase collision detection methods
-    std::vector<PartPtr> sweepAndPrune(const PartPtr& particle, bool xAxis = true);
-    ParticleGroups sweepAndPrune(bool xAxis = true);
-
-    ParticleGroups uniSpacePartitioning(size_t gridSpace = 10);
-    ParticleGroups kdTree(bool xAxis = false);
-    void buildKdTree(ParticleGroups& groups, std::vector<PartPtr>& particles, bool xAxis);
-
     // Particle members
     std::vector<PartPtr> particles;
     std::vector<SpringPtr> springs;
-    Vector2<double> nL{1, 0};   // Normal vector for left wall
-    Vector2<double> nR{-1, 0};  // Normal vector for right wall
-    Vector2<double> nB{0, -1};  // Normal vector for bottom wall
-    Vector2<double> nT{0, 1};   // Normal vector for top wall
     size_t numParticles{};
 
     sf::CircleShape particleCircle;
@@ -106,12 +99,9 @@ class Screen {
     PartPtr firstSpringParticle{nullptr};
     PartPtr secondSpringParticle{nullptr};
 
-    double dt{};    // Time step
-    sf::Clock dT;   // Clock for measuring time step
-    double e{0.5};  // Elasticity
+    sf::Clock dT;  // Clock for measuring time step
     bool mousePressed{false};
     int targetNumParticles{};
-    Vector2<double> gravity{0, 0};  // Global gravity
 
     // ImGui members
     Vector2<double> newParticleVel{0, 0};
@@ -119,7 +109,6 @@ class Screen {
     sf::Color newParticleColor{0x00, 0x00, 0x00, 0xFF};
     bool placeMode{true};
     int newParticleMass{5};
-    double frictionCoef{0.3};
     float borderXMin;
     float borderYMin;
     float borderXMax;

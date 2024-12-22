@@ -8,8 +8,9 @@ set(INPUT
     ${GRAPHIC_INCUDES}/InputHandler.hpp
 )
 set(SCREEN ${PARTICLE_INCLUDES}/Screen.hpp ${PARTICLE_INCLUDES}/Screen.cpp)
+set(PHYSICS ${PARTICLE_INCLUDES}/Physics.hpp)
 
-set(SIM ${INPUT} ${SCREEN})
+set(SIM ${INPUT} ${SCREEN} ${PHYSICS})
 
 add_executable(sim sim.cpp ${SIM})
 
