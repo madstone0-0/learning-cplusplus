@@ -4,9 +4,9 @@
 #include <SDL_joystick.h>
 #include <SDL_mixer.h>
 
-#include <MLinalg.hpp>
 #include <iostream>
 #include <memory>
+#include <mlinalg/MLinalg.hpp>
 #include <string_view>
 #include <utility>
 

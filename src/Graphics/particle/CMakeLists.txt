@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 
 project(particle LANGUAGES CXX)
-include_directories(${LINALG})
 include_directories(${PARTICLE_INCLUDES})
 
 set(INPUT
@@ -10,24 +9,18 @@ set(INPUT
 )
 set(SCREEN ${PARTICLE_INCLUDES}/Screen.hpp ${PARTICLE_INCLUDES}/Screen.cpp)
 
-set(BACKEND
-    ${PARTICLE_INCLUDES}/Backend.hpp
-    ${PARTICLE_INCLUDES}/SDL_Backend.hpp
-    ${PARTICLE_INCLUDES}/SFML_Backend.hpp
-)
-
-set(SIM ${INPUT} ${BACKEND} ${SCREEN})
+set(SIM ${INPUT} ${SCREEN})
 
 add_executable(sim sim.cpp ${SIM})
 
 target_link_libraries(
     sim
     PRIVATE
+        ImGui-SFML::ImGui-SFML
+        imgui
         SDL2::SDL2
         PkgConfig::SDL2_IMAGE
         PkgConfig::SDL2_GFX
-        mlinalg
+        mlinalg::mlinalg
         sfml-graphics
-        ImGui-SFML::ImGui-SFML
-        imgui
 )
