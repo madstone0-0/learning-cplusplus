@@ -1,7 +1,7 @@
 #include <fmt/core.h>
 /*#include <matplotlibcpp.h>*/
 #include <matplot/matplot.h>
-#include <python3.12/Python.h>
+#include <python3.13/Python.h>
 #include <semaphore.h>
 
 #include <algorithm>
@@ -85,17 +85,17 @@ using Objs = vector<unique_ptr<Object3D>>;
 Vectors extractVectors(const Objs& objs) {
     Vectors res;
     for (const auto& obj : objs) {
-        if (instanceof <Polygon3D>(obj)) {
+        if (instanceof<Polygon3D>(obj)) {
             auto* poly = dynamic_cast<Polygon3D*>(obj.get());
             res.insert(res.end(), poly->nodes.begin(), poly->nodes.end());
-        } else if (instanceof <Points3D>(obj)) {
+        } else if (instanceof<Points3D>(obj)) {
             auto* point = dynamic_cast<Points3D*>(obj.get());
             res.insert(res.end(), point->nodes.begin(), point->nodes.end());
-        } else if (instanceof <Segment3D>(obj)) {
+        } else if (instanceof<Segment3D>(obj)) {
             auto* seg = dynamic_cast<Segment3D*>(obj.get());
             res.push_back(seg->start);
             res.push_back(seg->stop);
-        } else if (instanceof <Arrow3D>(obj)) {
+        } else if (instanceof<Arrow3D>(obj)) {
             auto* arrow = dynamic_cast<Arrow3D*>(obj.get());
             res.push_back(arrow->tail);
             res.push_back(arrow->tip);
@@ -210,16 +210,16 @@ void drawObjects(const Objs& objects, bool origin = true, bool axes = true, cons
     }
 
     for (const auto& obj : objects) {
-        if (instanceof <Polygon3D>(obj.get())) {
+        if (instanceof<Polygon3D>(obj.get())) {
             auto* poly = dynamic_cast<Polygon3D*>(obj.get());
             drawPolygon(poly->nodes, poly->color);
-        } else if (instanceof <Points3D>(obj.get())) {
+        } else if (instanceof<Points3D>(obj.get())) {
             auto* points = dynamic_cast<Points3D*>(obj.get());
             drawPoints(points->nodes, points->color);
-        } else if (instanceof <Segment3D>(obj.get())) {
+        } else if (instanceof<Segment3D>(obj.get())) {
             auto* seg = dynamic_cast<Segment3D*>(obj.get());
             drawSegment(*seg, seg->color);
-        } else if (instanceof <Arrow3D>(obj.get())) {
+        } else if (instanceof<Arrow3D>(obj.get())) {
             auto* arrow = dynamic_cast<Arrow3D*>(obj.get());
             drawSegment(arrow->tail, arrow->tip);
         }

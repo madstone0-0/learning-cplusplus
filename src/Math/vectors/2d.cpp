@@ -1,7 +1,7 @@
 #include <fmt/core.h>
 #include <matplot/matplot.h>
 #include <matplotlibcpp.h>
-#include <python3.12/Python.h>
+#include <python3.13/Python.h>
 #include <semaphore.h>
 
 #include <algorithm>
@@ -144,17 +144,17 @@ using Objs = vector<unique_ptr<Object>>;
 vector<Vector2D> extractVectors(const Objs& objs) {
     vector<Vector2D> res;
     for (const auto& obj : objs) {
-        if (instanceof <Polygon>(obj)) {
+        if (instanceof<Polygon>(obj)) {
             auto* poly = dynamic_cast<Polygon*>(obj.get());
             res.insert(res.end(), poly->nodes.begin(), poly->nodes.end());
-        } else if (instanceof <Points>(obj)) {
+        } else if (instanceof<Points>(obj)) {
             auto* point = dynamic_cast<Points*>(obj.get());
             res.insert(res.end(), point->nodes.begin(), point->nodes.end());
-        } else if (instanceof <Segment>(obj)) {
+        } else if (instanceof<Segment>(obj)) {
             auto* seg = dynamic_cast<Segment*>(obj.get());
             res.push_back(seg->start);
             res.push_back(seg->stop);
-        } else if (instanceof <Arrow>(obj)) {
+        } else if (instanceof<Arrow>(obj)) {
             auto* arrow = dynamic_cast<Arrow*>(obj.get());
             res.push_back(arrow->tail);
             res.push_back(arrow->tip);
@@ -241,13 +241,13 @@ void drawObjects(const Objs& objects, bool origin = true, bool axes = true, cons
     }
 
     for (const auto& object : objects) {
-        if (instanceof <Polygon>(object)) {
+        if (instanceof<Polygon>(object)) {
             auto* poly = dynamic_cast<Polygon*>(object.get());
             drawPolygon(poly->nodes, poly->color);
-        } else if (instanceof <Points>(object)) {
+        } else if (instanceof<Points>(object)) {
             auto* points = dynamic_cast<Points*>(object.get());
             drawPoints(points->nodes, points->color);
-        } else if (instanceof <Arrow>(object)) {
+        } else if (instanceof<Arrow>(object)) {
             auto* arrow = dynamic_cast<Arrow*>(object.get());
             const auto& tip = arrow->tip;
             const auto& tail = arrow->tail;
@@ -259,7 +259,7 @@ void drawObjects(const Objs& objects, bool origin = true, bool axes = true, cons
             auto a = plt::arrow(tail.x, tail.y, newX, newY);
             a->color(arrow->color);
             a->line_width(tipLen / 1.5);
-        } else if (instanceof <Segment>(object)) {
+        } else if (instanceof<Segment>(object)) {
             auto* seg = dynamic_cast<Segment*>(object.get());
             drawSegment(*seg);
         }
