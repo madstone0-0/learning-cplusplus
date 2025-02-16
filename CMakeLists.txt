@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.14)
 cmake_minimum_required(VERSION 3.20)
 
 project(Learning LANGUAGES CXX VERSION 1.0)
@@ -16,6 +15,7 @@ add_compile_options(-Wall -Wextra -Werror=return-type)
 set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -fsanitize=address")
 
 set(CMAKE_CXX_FLAGS_RELEASE "-Os -fno-ident")
+set(CMAKE_CXX_FLAGS_PROFILE "-g -pg")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include_directories("src/Crash_Course/_includes")
@@ -23,13 +23,18 @@ include_directories("src/Math/_includes")
 include_directories("src/Data_Structures/_includes")
 set(INCLUDE ${CMAKE_SOURCE_DIR}/src/Crash_Course/_includes)
 set(FUND_INC ${CMAKE_SOURCE_DIR}/src/Data_Structures/_includes)
-set(DS ${FUND_INC}/fundamental.hpp ${FUND_INC}/fundamental_interfaces.hpp)
+# set(DS ${FUND_INC}/fundamental.hpp ${FUND_INC}/fundamental_interfaces.hpp)
+file(
+    GLOB DS
+    # CONFIGURE_DEPENDS
+    ${FUND_INC}/interfaces/*.hpp
+    ${FUND_INC}/structures/*.hpp
+)
 set(MATH_INC ${CMAKE_SOURCE_DIR}/src/Math/_includes)
 set(TIMER ${INCLUDE}/timer.hpp ${INCLUDE}/timer.cpp)
 set(TRACER ${INCLUDE}/tracer.hpp ${INCLUDE}/tracer.cpp)
 set(BYTE_HEADERS ${INCLUDE}/bytes.hpp ${INCLUDE}/bytes.cpp)
 set(STOPWATCH ${INCLUDE}/stopwatch.hpp)
-set(LINALG ${CMAKE_SOURCE_DIR}/src/Math/MLinalg)
 
 include(FetchContent)
 
@@ -76,44 +81,60 @@ pkg_search_module(SDL2_IMAGE REQUIRED SDL2_image IMPORTED_TARGET)
 pkg_search_module(SDL2_MIXER REQUIRED SDL2_mixer IMPORTED_TARGET)
 pkg_search_module(SDL2_GFX REQUIRED SDL2_gfx IMPORTED_TARGET)
 
+include(FetchContent)
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
+
 #################
 # SFML          #
 #################
-set(SFML_DIR "/usr/lib/cmake/SFML") # Move this above find_package
+# set(SFML_DIR "/usr/lib/cmake/SFML") # Move this above find_package
 # set(BUILD_SHARED_LIBS OFF) # Disable shared libs
 # set(SFML_STATIC_LIBRARIES TRUE)
-find_package(SFML 2.5 COMPONENTS graphics system window REQUIRED CONFIG)
+# find_package(SFML 2.6 COMPONENTS graphics system window REQUIRED CONFIG)
+# pkg_search_module(SFML REQUIRED sfml-all IMPORTED_TARGET)
+set(SFML_VERSION 2.6.2)
+FetchContent_Declare(
+    SFML
+    URL "https://github.com/SFML/SFML/archive/${SFML_VERSION}.zip"
+)
+option(SFML_BUILD_AUDIO "Build audio" OFF)
+option(SFML_BUILD_NETWORK "Build network" OFF)
+FetchContent_MakeAvailable(sfml)
 
 ######################
 # ImGui & ImGui-Sfml #
 ######################
-set(IMGUI_VERSION 1.91.0)
+set(IMGUI_VERSION 1.91.1)
 # set(IMGUI_SFML_VERSION 2.3)
 
-# FetchContent_Declare(
-#     imgui
-#     URL "https://github.com/ocornut/imgui/archive/v${IMGUI_VERSION}.zip"
-# )
-#
-# # Or by tag...
-# FetchContent_Declare(
-#     imgui-sfml
-#     GIT_REPOSITORY https://github.com/SFML/imgui-sfml.git
-#     GIT_TAG 2.6.x
-# )
+FetchContent_Declare(
+    imgui
+    URL "https://github.com/ocornut/imgui/archive/v${IMGUI_VERSION}.zip"
+)
+
+FetchContent_Declare(
+    imgui-sfml
+    GIT_REPOSITORY https://github.com/SFML/imgui-sfml.git
+    GIT_TAG 2.6.x
+)
 
 # Dear ImGui
-# FetchContent_MakeAvailable(imgui)
-set(IMGUI_DIR "/usr/include")
-find_package(imgui REQUIRED)
+FetchContent_MakeAvailable(imgui)
+# set(IMGUI_DIR "/usr/include")
+# find_package(imgui REQUIRED)
 
 # ImGui-SFML
 set(IMGUI_DIR ${imgui_SOURCE_DIR})
 option(IMGUI_SFML_FIND_SFML "Use find_package to find SFML" OFF)
 option(IMGUI_SFML_IMGUI_DEMO "Build imgui_demo.cpp" OFF)
 
-find_package(ImGui-SFML REQUIRED CONFIG)
-# FetchContent_MakeAvailable(imgui-sfml)
+# find_package(ImGui-SFML REQUIRED CONFIG)
+FetchContent_MakeAvailable(imgui-sfml)
+
+#################
+# MLinalg       #
+#################
+find_package(mlinalg REQUIRED)
 
 #################
 # Boost Library #
@@ -124,6 +145,7 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 add_definitions(-D_WIN32_WINNT=0x0501)
 find_package(
     Boost
+    CONFIG
     COMPONENTS
         regex
         date_time
