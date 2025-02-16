@@ -1,7 +1,7 @@
-#include <MLinalg.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
+#include <mlinalg/MLinalg.hpp>
 #include <ranges>
 #include <sstream>
 #include <string>
@@ -11,8 +11,8 @@ using std::cout, std::endl, std::cin, std::vector, std::string, std::stringstrea
 namespace op = boost::program_options;
 namespace ba = boost::algorithm;
 
-template <Number number, size_t m, size_t n>
-auto printSol(mlinalg::LinearSystem<number, m, n> system) {
+template <Number number, int m, int n>
+inline auto printSol(mlinalg::LinearSystem<number, m, n> system) {
     using namespace mlinalg;
     auto sol{findSolutions(system)};
     cout << "For the system:\n" << system << "\nThe solutions are: ";
@@ -23,8 +23,8 @@ auto printSol(mlinalg::LinearSystem<number, m, n> system) {
     cout << sol << '\n';
 }
 
-template <Number number, size_t m, size_t n>
-auto printSol(mlinalg::Matrix<number, m, n> A, mlinalg::Vector<number, m> b) {
+template <Number number, int m, int n>
+inline auto printSol(mlinalg::Matrix<number, m, n> A, mlinalg::Vector<number, m> b) {
     using namespace mlinalg;
     auto sol{findSolutions(A, b)};
     cout << "For the system:\n" << A.augment(b) << "\nThe solutions are: ";
