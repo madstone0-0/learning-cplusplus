@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.20)
 
 project(misc LANGUAGES CXX)
 set(BYTE_HEADERS ${INCLUDE}/bytes.hpp ${INCLUDE}/bytes.cpp)
@@ -16,7 +16,6 @@ add_executable(utils_test utils_test.cpp)
 add_executable(algos_test algos_test.cpp ${INCLUDE}/algorithms.hpp ${TIMER})
 add_executable(dorg dorg.cpp)
 add_executable(randHist randHist.cpp)
-
 
 target_link_libraries(algos_test PRIVATE Catch2::Catch2WithMain)
 target_link_libraries(bytes_test PRIVATE Catch2::Catch2WithMain)

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.20)
 
 project(smart_pointers LANGUAGES CXX)
 
@@ -10,7 +10,6 @@ add_executable(weak weak.cpp ${CATCH})
 add_executable(intrusive intrusive.cpp ${CATCH})
 add_executable(allocators allocators.cpp ${CATCH})
 add_executable(hal hal.cpp)
-
 
 target_link_libraries(allocators PRIVATE Catch2::Catch2WithMain)
 target_link_libraries(intrusive PRIVATE Catch2::Catch2WithMain)

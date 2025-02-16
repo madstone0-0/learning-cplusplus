@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.20)
 
 project(particle LANGUAGES CXX)
 include_directories(${PARTICLE_INCLUDES})
@@ -9,8 +9,16 @@ set(INPUT
 )
 set(SCREEN ${PARTICLE_INCLUDES}/Screen.hpp ${PARTICLE_INCLUDES}/Screen.cpp)
 set(PHYSICS ${PARTICLE_INCLUDES}/Physics.hpp)
+set(MULTITHREADING ${PARTICLE_INCLUDES}/multithreading.hpp)
+set(MISC ${PARTICLE_INCLUDES}/aliases.hpp)
 
-set(SIM ${INPUT} ${SCREEN} ${PHYSICS})
+set(SIM
+    ${INPUT}
+    ${SCREEN}
+    ${PHYSICS}
+    ${MULTITHREADING}
+    ${MISC}
+)
 
 add_executable(sim sim.cpp ${SIM})
 

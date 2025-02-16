@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.20)
 
 project(expressions LANGUAGES CXX)
 
@@ -13,7 +13,6 @@ googletest_add_test(car_test_google_mock car_test_google_mock.cpp)
 googletest_add_test(signs_test signs_test.cpp)
 
 enable_testing()
-
 
 target_link_libraries(car_test_catch PRIVATE Catch2::Catch2WithMain)
 

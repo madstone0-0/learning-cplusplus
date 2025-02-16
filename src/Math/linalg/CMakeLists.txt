@@ -1,8 +1,6 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.20)
 
 project(linalg LANGUAGES CXX)
-
-include_directories(${LINALG})
 
 add_executable(tests tests.cpp)
 add_executable(fundamental fundamental.cpp)

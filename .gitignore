@@ -9,3 +9,10 @@ tags
 .cache
 src/Math/Math-for-Programmers
 .python-version
+*.srctrlbm
+*.srctrldb
+*.srctrlprj
+*.out
+*.out.*
+*.data
+*.png
