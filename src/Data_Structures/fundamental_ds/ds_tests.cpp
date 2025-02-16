@@ -1,6 +1,6 @@
 #include <catch2/catch_all.hpp>
 
-#include "fundamental.hpp"
+#include "structures/structures.hpp"
 #include "timer.hpp"
 using namespace Catch;
 
@@ -885,4 +885,710 @@ TEST_CASE("Priority Queue") {
     SECTION("Throw exception when accessing min of empty priority queue") { REQUIRE_THROWS(lPQueue.min()); }
 
     SECTION("Throw exception when removing from empty priority queue") { REQUIRE_THROWS(lPQueue.removeMin()); }
+}
+
+TEST_CASE("Graph") {
+    SECTION("Undirected Graph") {
+        SECTION("Edge List Graph") {
+            data_structures::graph::undirected::EdgeListUGraph<int, int> uGraph{};
+
+            SECTION("Move") {
+                SECTION("Construction") {
+                    uGraph.addNode(1);
+                    uGraph.addNode(2);
+                    uGraph.addNode(3);
+                    uGraph.addNode(4);
+                    uGraph.addNode(5);
+
+                    auto uMove{std::move(uGraph)};
+                    REQUIRE(uMove.size() == 5);
+                    REQUIRE(uGraph.size() == 0);
+                    REQUIRE(uGraph.isEmpty());
+                }
+
+                SECTION("Assignment") {
+                    uGraph.addNode(1);
+                    uGraph.addNode(2);
+                    uGraph.addNode(3);
+                    uGraph.addNode(4);
+                    uGraph.addNode(5);
+
+                    auto uMove = std::move(uGraph);
+                    REQUIRE(uMove.size() == 5);
+                    REQUIRE(uGraph.size() == 0);
+                    REQUIRE(uGraph.isEmpty());
+                }
+            }
+
+            SECTION("Copy") {
+                SECTION("Construction") {
+                    uGraph.addNode(1);
+                    uGraph.addNode(2);
+                    uGraph.addNode(3);
+                    uGraph.addNode(4);
+                    uGraph.addNode(5);
+
+                    auto uCopy{uGraph};
+                    REQUIRE(uCopy.size() == 5);
+                    REQUIRE(uGraph.size() == 5);
+                }
+
+                SECTION("Assignment") {
+                    uGraph.addNode(1);
+                    uGraph.addNode(2);
+                    uGraph.addNode(3);
+                    uGraph.addNode(4);
+                    uGraph.addNode(5);
+
+                    auto uCopy = uGraph;
+                    REQUIRE(uCopy.size() == 5);
+                    REQUIRE(uGraph.size() == 5);
+                }
+            }
+
+            SECTION("General Graph Tests") {
+                SECTION("Add Nodes") {
+                    uGraph.addNode(1);
+                    uGraph.addNode(2);
+                    uGraph.addNode(3);
+                    uGraph.addNode(4);
+                    uGraph.addNode(5);
+
+                    REQUIRE(uGraph.size() == 5);
+                }
+
+                SECTION("Add Edges") {
+                    auto n1 = uGraph.addNode(1);
+                    auto n2 = uGraph.addNode(2);
+                    auto n3 = uGraph.addNode(3);
+                    auto n4 = uGraph.addNode(4);
+
+                    auto e1 = uGraph.addEdge(n1, n2, 10);
+                    auto e2 = uGraph.addEdge(n1, n3, 20);
+                    auto e3 = uGraph.addEdge(n2, n3, 30);
+                    auto e4 = uGraph.addEdge(n3, n4, 40);
+
+                    REQUIRE(uGraph.size() == 4);
+                    REQUIRE(uGraph.numEdges() == 4);
+                }
+
+                SECTION("Remove Nodes") {
+                    auto n1 = uGraph.addNode(1);
+                    auto n2 = uGraph.addNode(2);
+                    auto n3 = uGraph.addNode(3);
+                    auto n4 = uGraph.addNode(4);
+
+                    uGraph.removeNode(n1);
+                    uGraph.removeNode(n2);
+
+                    REQUIRE(uGraph.size() == 2);
+                }
+
+                SECTION("Remove Edges") {
+                    auto n1 = uGraph.addNode(1);
+                    auto n2 = uGraph.addNode(2);
+                    auto n3 = uGraph.addNode(3);
+                    auto n4 = uGraph.addNode(4);
+
+                    auto e1 = uGraph.addEdge(n1, n2, 10);
+                    auto e2 = uGraph.addEdge(n1, n3, 20);
+                    auto e3 = uGraph.addEdge(n2, n3, 30);
+                    auto e4 = uGraph.addEdge(n3, n4, 40);
+
+                    uGraph.removeEdge(e1);
+                    uGraph.removeEdge(e2);
+
+                    REQUIRE(uGraph.numEdges() == 2);
+                }
+            }
+
+            SECTION("Node Tests") {
+                SECTION("Incident Edges") {
+                    auto n1 = uGraph.addNode(1);
+                    auto n2 = uGraph.addNode(2);
+                    auto n3 = uGraph.addNode(3);
+                    auto n4 = uGraph.addNode(4);
+
+                    auto e1 = uGraph.addEdge(n1, n2, 10);
+                    auto e2 = uGraph.addEdge(n1, n3, 20);
+                    auto e3 = uGraph.addEdge(n2, n3, 30);
+                    auto e4 = uGraph.addEdge(n3, n4, 40);
+
+                    auto n1Node = uGraph.validateNode(n1);
+                    auto n2Node = uGraph.validateNode(n2);
+                    auto n3Node = uGraph.validateNode(n3);
+                    auto n4Node = uGraph.validateNode(n4);
+
+                    auto n1Inc = n1Node->incidentEdges();
+                    auto n2Inc = n2Node->incidentEdges();
+                    auto n3Inc = n3Node->incidentEdges();
+                    auto n4Inc = n4Node->incidentEdges();
+
+                    REQUIRE(n1Inc.size() == 2);
+                    REQUIRE(n2Inc.size() == 2);
+                    REQUIRE(n3Inc.size() == 3);
+                    REQUIRE(n4Inc.size() == 1);
+                }
+
+                SECTION("Adjacent Nodes") {
+                    auto n1 = uGraph.addNode(1);
+                    auto n2 = uGraph.addNode(2);
+                    auto n3 = uGraph.addNode(3);
+                    auto n4 = uGraph.addNode(4);
+
+                    auto e1 = uGraph.addEdge(n1, n2, 10);
+                    auto e2 = uGraph.addEdge(n1, n3, 20);
+                    auto e3 = uGraph.addEdge(n2, n3, 30);
+                    auto e4 = uGraph.addEdge(n3, n4, 40);
+
+                    auto n1Node = uGraph.validateNode(n1);
+                    auto n2Node = uGraph.validateNode(n2);
+                    auto n3Node = uGraph.validateNode(n3);
+                    auto n4Node = uGraph.validateNode(n4);
+
+                    auto n1Adj = n1Node->isAdjacentTo(n2Node);
+                    auto n2Adj = n2Node->isAdjacentTo(n3Node);
+                    auto n3Adj = n3Node->isAdjacentTo(n4Node);
+                    auto n4Adj = n4Node->isAdjacentTo(n1Node);
+
+                    REQUIRE(n1Adj);
+                    REQUIRE(n2Adj);
+                    REQUIRE(n3Adj);
+                    REQUIRE_FALSE(n4Adj);
+                }
+            }
+
+            SECTION("Edge Tests") {
+                SECTION("End Nodes") {
+                    auto n1 = uGraph.addNode(1);
+                    auto n2 = uGraph.addNode(2);
+                    auto n3 = uGraph.addNode(3);
+                    auto n4 = uGraph.addNode(4);
+
+                    auto e1 = uGraph.addEdge(n1, n2, 10);
+                    auto e2 = uGraph.addEdge(n1, n3, 20);
+                    auto e3 = uGraph.addEdge(n2, n3, 30);
+                    auto e4 = uGraph.addEdge(n3, n4, 40);
+
+                    auto e1Edge = uGraph.validateEdge(e1);
+                    auto e2Edge = uGraph.validateEdge(e2);
+                    auto e3Edge = uGraph.validateEdge(e3);
+                    auto e4Edge = uGraph.validateEdge(e4);
+
+                    auto e1Ends = e1Edge->endNodes();
+                    auto e2Ends = e2Edge->endNodes();
+                    auto e3Ends = e3Edge->endNodes();
+                    auto e4Ends = e4Edge->endNodes();
+
+                    REQUIRE(e1Ends.at(0) == n1);
+                    REQUIRE(e1Ends.at(1) == n2);
+
+                    REQUIRE(e2Ends.at(0) == n1);
+                    REQUIRE(e2Ends.at(1) == n3);
+
+                    REQUIRE(e3Ends.at(0) == n2);
+                    REQUIRE(e3Ends.at(1) == n3);
+
+                    REQUIRE(e4Ends.at(0) == n3);
+                    REQUIRE(e4Ends.at(1) == n4);
+                }
+
+                SECTION("Incident Nodes") {
+                    auto n1 = uGraph.addNode(1);
+                    auto n2 = uGraph.addNode(2);
+                    auto n3 = uGraph.addNode(3);
+                    auto n4 = uGraph.addNode(4);
+
+                    auto e1 = uGraph.addEdge(n1, n2, 10);
+                    auto e2 = uGraph.addEdge(n1, n3, 20);
+                    auto e3 = uGraph.addEdge(n2, n3, 30);
+                    auto e4 = uGraph.addEdge(n3, n4, 40);
+
+                    auto e1Edge = uGraph.validateEdge(e1);
+                    auto e2Edge = uGraph.validateEdge(e2);
+                    auto e3Edge = uGraph.validateEdge(e3);
+                    auto e4Edge = uGraph.validateEdge(e4);
+
+                    auto e1Inc = e1Edge->endNodes();
+                    auto e2Inc = e2Edge->endNodes();
+                    auto e3Inc = e3Edge->endNodes();
+                    auto e4Inc = e4Edge->endNodes();
+
+                    REQUIRE(e1Edge->isIncidentOn(n1));
+                    REQUIRE(e1Edge->isIncidentOn(n2));
+
+                    REQUIRE(e2Edge->isIncidentOn(n1));
+                    REQUIRE(e2Edge->isIncidentOn(n3));
+
+                    REQUIRE(e3Edge->isIncidentOn(n2));
+                    REQUIRE(e3Edge->isIncidentOn(n3));
+
+                    REQUIRE(e4Edge->isIncidentOn(n3));
+                    REQUIRE(e4Edge->isIncidentOn(n4));
+
+                    REQUIRE_FALSE(e1Edge->isIncidentOn(n3));
+                    REQUIRE_FALSE(e1Edge->isIncidentOn(n4));
+
+                    REQUIRE_FALSE(e2Edge->isIncidentOn(n2));
+                    REQUIRE_FALSE(e2Edge->isIncidentOn(n4));
+                }
+
+                SECTION("Opposite Node") {
+                    auto n1 = uGraph.addNode(1);
+                    auto n2 = uGraph.addNode(2);
+                    auto n3 = uGraph.addNode(3);
+                    auto n4 = uGraph.addNode(4);
+
+                    auto e1 = uGraph.addEdge(n1, n2, 10);
+                    auto e2 = uGraph.addEdge(n1, n3, 20);
+                    auto e3 = uGraph.addEdge(n2, n3, 30);
+                    auto e4 = uGraph.addEdge(n3, n4, 40);
+
+                    auto e1Edge = uGraph.validateEdge(e1);
+                    auto e2Edge = uGraph.validateEdge(e2);
+                    auto e3Edge = uGraph.validateEdge(e3);
+                    auto e4Edge = uGraph.validateEdge(e4);
+
+                    auto e1Opp = e1Edge->opposite(n1);
+                    auto e2Opp = e2Edge->opposite(n1);
+                    auto e3Opp = e3Edge->opposite(n2);
+                    auto e4Opp = e4Edge->opposite(n3);
+
+                    REQUIRE(e1Opp == n2);
+                    REQUIRE(e2Opp == n3);
+                    REQUIRE(e3Opp == n3);
+                    REQUIRE(e4Opp == n4);
+                }
+
+                SECTION("Adjacent Edges") {
+                    auto n1 = uGraph.addNode(1);
+                    auto n2 = uGraph.addNode(2);
+                    auto n3 = uGraph.addNode(3);
+                    auto n4 = uGraph.addNode(4);
+
+                    auto e1 = uGraph.addEdge(n1, n2, 10);
+                    auto e2 = uGraph.addEdge(n1, n3, 20);
+                    auto e3 = uGraph.addEdge(n2, n3, 30);
+                    auto e4 = uGraph.addEdge(n3, n4, 40);
+
+                    auto e1Edge = uGraph.validateEdge(e1);
+                    auto e2Edge = uGraph.validateEdge(e2);
+                    auto e3Edge = uGraph.validateEdge(e3);
+                    auto e4Edge = uGraph.validateEdge(e4);
+
+                    REQUIRE(e1Edge->isAdjacentTo(e2Edge));
+                    REQUIRE(e1Edge->isAdjacentTo(e3Edge));
+                    REQUIRE_FALSE(e1Edge->isAdjacentTo(e4Edge));
+                }
+
+                SECTION("Edge Weight") {
+                    auto n1 = uGraph.addNode(1);
+                    auto n2 = uGraph.addNode(2);
+                    auto n3 = uGraph.addNode(3);
+                    auto n4 = uGraph.addNode(4);
+
+                    auto e1 = uGraph.addEdge(n1, n2, 10);
+                    auto e2 = uGraph.addEdge(n1, n3, 20);
+                    auto e3 = uGraph.addEdge(n2, n3, 30);
+                    auto e4 = uGraph.addEdge(n3, n4, 40);
+
+                    auto e1Edge = uGraph.validateEdge(e1);
+                    auto e2Edge = uGraph.validateEdge(e2);
+                    auto e3Edge = uGraph.validateEdge(e3);
+                    auto e4Edge = uGraph.validateEdge(e4);
+
+                    REQUIRE(**e1Edge == 10);
+                    REQUIRE(**e2Edge == 20);
+                    REQUIRE(**e3Edge == 30);
+                    REQUIRE(**e4Edge == 40);
+                }
+            }
+        }
+    }
+
+    SECTION("Directed Graph") {
+        SECTION("Edge List Graph") {
+            data_structures::graph::directed::EdgeListDGraph<int, int> dGraph{};
+
+            SECTION("Move") {
+                SECTION("Construction") {
+                    dGraph.addNode(1);
+                    dGraph.addNode(2);
+                    dGraph.addNode(3);
+                    dGraph.addNode(4);
+                    dGraph.addNode(5);
+
+                    auto dMove{std::move(dGraph)};
+                    REQUIRE(dMove.size() == 5);
+                    REQUIRE(dGraph.size() == 0);
+                    REQUIRE(dGraph.isEmpty());
+                }
+
+                SECTION("Assignment") {
+                    dGraph.addNode(1);
+                    dGraph.addNode(2);
+                    dGraph.addNode(3);
+                    dGraph.addNode(4);
+                    dGraph.addNode(5);
+
+                    auto dMove = std::move(dGraph);
+                    REQUIRE(dMove.size() == 5);
+                    REQUIRE(dGraph.size() == 0);
+                    REQUIRE(dGraph.isEmpty());
+                }
+            }
+
+            SECTION("Copy") {
+                SECTION("Construction") {
+                    dGraph.addNode(1);
+                    dGraph.addNode(2);
+                    dGraph.addNode(3);
+                    dGraph.addNode(4);
+                    dGraph.addNode(5);
+
+                    auto dCopy{dGraph};
+                    REQUIRE(dCopy.size() == 5);
+                    REQUIRE(dGraph.size() == 5);
+                }
+
+                SECTION("Assignment") {
+                    dGraph.addNode(1);
+                    dGraph.addNode(2);
+                    dGraph.addNode(3);
+                    dGraph.addNode(4);
+                    dGraph.addNode(5);
+
+                    auto dCopy = dGraph;
+                    REQUIRE(dCopy.size() == 5);
+                    REQUIRE(dGraph.size() == 5);
+                }
+            }
+
+            SECTION("General Graph Tests") {
+                SECTION("Add Nodes") {
+                    dGraph.addNode(1);
+                    dGraph.addNode(2);
+                    dGraph.addNode(3);
+                    dGraph.addNode(4);
+                    dGraph.addNode(5);
+
+                    REQUIRE(dGraph.size() == 5);
+                }
+
+                SECTION("Add Edges") {
+                    auto n1 = dGraph.addNode(1);
+                    auto n2 = dGraph.addNode(2);
+                    auto n3 = dGraph.addNode(3);
+                    auto n4 = dGraph.addNode(4);
+
+                    auto e1 = dGraph.addEdge(n1, n2, 10);
+                    auto e2 = dGraph.addEdge(n1, n3, 20);
+                    auto e3 = dGraph.addEdge(n2, n3, 30);
+                    auto e4 = dGraph.addEdge(n3, n4, 40);
+
+                    REQUIRE(dGraph.size() == 4);
+                    REQUIRE(dGraph.numEdges() == 4);
+                }
+
+                SECTION("Remove Nodes") {
+                    auto n1 = dGraph.addNode(1);
+                    auto n2 = dGraph.addNode(2);
+                    auto n3 = dGraph.addNode(3);
+                    auto n4 = dGraph.addNode(4);
+
+                    dGraph.removeNode(n1);
+                    dGraph.removeNode(n2);
+
+                    REQUIRE(dGraph.size() == 2);
+                }
+
+                SECTION("Remove Edges") {
+                    auto n1 = dGraph.addNode(1);
+                    auto n2 = dGraph.addNode(2);
+                    auto n3 = dGraph.addNode(3);
+                    auto n4 = dGraph.addNode(4);
+
+                    auto e1 = dGraph.addEdge(n1, n2, 10);
+                    auto e2 = dGraph.addEdge(n1, n3, 20);
+                    auto e3 = dGraph.addEdge(n2, n3, 30);
+                    auto e4 = dGraph.addEdge(n3, n4, 40);
+
+                    dGraph.removeEdge(e1);
+                    dGraph.removeEdge(e2);
+
+                    REQUIRE(dGraph.numEdges() == 2);
+                }
+            }
+
+            SECTION("Node Tests") {
+                SECTION("Incident Edges") {
+                    auto n1 = dGraph.addNode(1);
+                    auto n2 = dGraph.addNode(2);
+                    auto n3 = dGraph.addNode(3);
+                    auto n4 = dGraph.addNode(4);
+
+                    auto e1 = dGraph.addEdge(n1, n2, 10);
+                    auto e2 = dGraph.addEdge(n1, n3, 20);
+                    auto e3 = dGraph.addEdge(n2, n3, 30);
+                    auto e4 = dGraph.addEdge(n3, n4, 40);
+
+                    auto n1Node = dGraph.validateNode(n1);
+                    auto n2Node = dGraph.validateNode(n2);
+                    auto n3Node = dGraph.validateNode(n3);
+                    auto n4Node = dGraph.validateNode(n4);
+
+                    auto n1Inc = n1Node->incidentEdges();
+                    auto n2Inc = n2Node->incidentEdges();
+                    auto n3Inc = n3Node->incidentEdges();
+                    auto n4Inc = n4Node->incidentEdges();
+
+                    REQUIRE(n1Inc.size() == 2);
+                    REQUIRE(n2Inc.size() == 2);
+                    REQUIRE(n3Inc.size() == 3);
+                    REQUIRE(n4Inc.size() == 1);
+                }
+
+                SECTION("Adjacent Nodes") {
+                    auto n1 = dGraph.addNode(1);
+                    auto n2 = dGraph.addNode(2);
+                    auto n3 = dGraph.addNode(3);
+                    auto n4 = dGraph.addNode(4);
+
+                    auto e1 = dGraph.addEdge(n1, n2, 10);
+                    auto e2 = dGraph.addEdge(n1, n3, 20);
+                    auto e3 = dGraph.addEdge(n2, n3, 30);
+                    auto e4 = dGraph.addEdge(n3, n4, 40);
+
+                    auto n1Node = dGraph.validateNode(n1);
+                    auto n2Node = dGraph.validateNode(n2);
+                    auto n3Node = dGraph.validateNode(n3);
+                    auto n4Node = dGraph.validateNode(n4);
+
+                    auto n1Adj = n1Node->isAdjacentTo(n2Node);
+                    auto n2Adj = n2Node->isAdjacentTo(n3Node);
+                    auto n3Adj = n3Node->isAdjacentTo(n4Node);
+                }
+            }
+
+            SECTION("Edge Tests") {
+                SECTION("End Nodes") {
+                    auto n1 = dGraph.addNode(1);
+                    auto n2 = dGraph.addNode(2);
+                    auto n3 = dGraph.addNode(3);
+                    auto n4 = dGraph.addNode(4);
+
+                    auto e1 = dGraph.addEdge(n1, n2, 10);
+                    auto e2 = dGraph.addEdge(n1, n3, 20);
+                    auto e3 = dGraph.addEdge(n2, n3, 30);
+                    auto e4 = dGraph.addEdge(n3, n4, 40);
+
+                    auto e1Edge = dGraph.validateEdge(e1);
+                    auto e2Edge = dGraph.validateEdge(e2);
+                    auto e3Edge = dGraph.validateEdge(e3);
+                    auto e4Edge = dGraph.validateEdge(e4);
+
+                    auto e1End = e1Edge->endNode();
+                    auto e1Start = e1Edge->startNode();
+                    auto e2End = e2Edge->endNode();
+                    auto e2Start = e2Edge->startNode();
+                    auto e3End = e3Edge->endNode();
+                    auto e3Start = e3Edge->startNode();
+                    auto e4End = e4Edge->endNode();
+                    auto e4Start = e4Edge->startNode();
+
+                    REQUIRE(e1Start == n1);
+                    REQUIRE(e1End == n2);
+                    REQUIRE(e2Start == n1);
+                    REQUIRE(e2End == n3);
+                    REQUIRE(e3Start == n2);
+                    REQUIRE(e3End == n3);
+                    REQUIRE(e4Start == n3);
+                    REQUIRE(e4End == n4);
+                }
+
+                SECTION("Incident Nodes") {
+                    auto n1 = dGraph.addNode(1);
+                    auto n2 = dGraph.addNode(2);
+                    auto n3 = dGraph.addNode(3);
+                    auto n4 = dGraph.addNode(4);
+
+                    auto e1 = dGraph.addEdge(n1, n2, 10);
+                    auto e2 = dGraph.addEdge(n1, n3, 20);
+                    auto e3 = dGraph.addEdge(n2, n3, 30);
+                    auto e4 = dGraph.addEdge(n3, n4, 40);
+
+                    auto e1Edge = dGraph.validateEdge(e1);
+                    auto e2Edge = dGraph.validateEdge(e2);
+                    auto e3Edge = dGraph.validateEdge(e3);
+                    auto e4Edge = dGraph.validateEdge(e4);
+
+                    REQUIRE(e1Edge->isIncidentOn(n1));
+                    REQUIRE(e1Edge->isIncidentOn(n2));
+                    REQUIRE_FALSE(e1Edge->isIncidentOn(n3));
+                    REQUIRE_FALSE(e1Edge->isIncidentOn(n4));
+
+                    REQUIRE(e2Edge->isIncidentOn(n1));
+                    REQUIRE(e2Edge->isIncidentOn(n3));
+                    REQUIRE_FALSE(e2Edge->isIncidentOn(n2));
+                    REQUIRE_FALSE(e2Edge->isIncidentOn(n4));
+
+                    REQUIRE_FALSE(e3Edge->isIncidentOn(n1));
+                    REQUIRE(e3Edge->isIncidentOn(n2));
+                    REQUIRE(e3Edge->isIncidentOn(n3));
+                    REQUIRE_FALSE(e3Edge->isIncidentOn(n4));
+
+                    REQUIRE_FALSE(e4Edge->isIncidentOn(n1));
+                    REQUIRE_FALSE(e4Edge->isIncidentOn(n2));
+                    REQUIRE(e4Edge->isIncidentOn(n3));
+                    REQUIRE(e4Edge->isIncidentOn(n4));
+                }
+            }
+        }
+    }
+}
+
+TEST_CASE("Heap") {
+    SECTION("Min Heap") {
+        data_structures::heap::ArrayMinHeap<int> mHeap{};
+
+        SECTION("General Tests") {
+            SECTION("Insert Elements") {
+                mHeap.insert(10);
+                mHeap.insert(20);
+                mHeap.insert(30);
+                mHeap.insert(40);
+                mHeap.insert(50);
+
+                REQUIRE(mHeap.size() == 5);
+                REQUIRE(mHeap.extreme() == 10);
+            }
+
+            SECTION("Remove Elements") {
+                mHeap.insert(10);
+                mHeap.insert(20);
+                mHeap.insert(30);
+                mHeap.insert(40);
+                mHeap.insert(50);
+
+                mHeap.extractExtreme();
+                mHeap.extractExtreme();
+
+                REQUIRE(mHeap.size() == 3);
+                REQUIRE(mHeap.extreme() == 30);
+            }
+        }
+
+        SECTION("Robustness") {
+            SECTION("Insert and Remove Elements") {
+                mHeap.insert(10);
+                mHeap.insert(20);
+                mHeap.insert(30);
+                mHeap.insert(40);
+                mHeap.insert(50);
+
+                mHeap.extractExtreme();
+                mHeap.extractExtreme();
+                mHeap.extractExtreme();
+                mHeap.extractExtreme();
+                mHeap.extractExtreme();
+
+                REQUIRE(mHeap.size() == 0);
+                REQUIRE_THROWS(mHeap.extreme());
+            }
+
+            SECTION("Insert and Remove Elements in Random Order") {
+                mHeap.insert(10);
+                mHeap.insert(20);
+                mHeap.insert(30);
+                mHeap.insert(40);
+                mHeap.insert(50);
+
+                mHeap.extractExtreme();
+                mHeap.insert(5);
+                mHeap.extractExtreme();
+                mHeap.insert(100);
+                mHeap.extractExtreme();
+                mHeap.insert(15);
+                mHeap.extractExtreme();
+                mHeap.insert(25);
+                mHeap.extractExtreme();
+
+                REQUIRE(mHeap.size() == 4);
+                REQUIRE(mHeap.extreme() == 30);
+            }
+        }
+    }
+
+    SECTION("Max Heap") {
+        SECTION("General Tests") {
+            data_structures::heap::ArrayMaxHeap<int> mHeap{};
+
+            SECTION("Insert Elements") {
+                mHeap.insert(10);
+                mHeap.insert(20);
+                mHeap.insert(30);
+                mHeap.insert(40);
+                mHeap.insert(50);
+
+                REQUIRE(mHeap.size() == 5);
+                REQUIRE(mHeap.extreme() == 50);
+            }
+
+            SECTION("Remove Elements") {
+                mHeap.insert(10);
+                mHeap.insert(20);
+                mHeap.insert(30);
+                mHeap.insert(40);
+                mHeap.insert(50);
+
+                mHeap.extractExtreme();
+                mHeap.extractExtreme();
+
+                REQUIRE(mHeap.size() == 3);
+                REQUIRE(mHeap.extreme() == 30);
+            }
+        }
+
+        SECTION("Robustness") {
+            data_structures::heap::ArrayMaxHeap<int> mHeap{};
+
+            SECTION("Insert and Remove Elements") {
+                mHeap.insert(10);
+                mHeap.insert(20);
+                mHeap.insert(30);
+                mHeap.insert(40);
+                mHeap.insert(50);
+
+                mHeap.extractExtreme();
+                mHeap.extractExtreme();
+                mHeap.extractExtreme();
+                mHeap.extractExtreme();
+                mHeap.extractExtreme();
+
+                REQUIRE(mHeap.size() == 0);
+                REQUIRE_THROWS(mHeap.extreme());
+            }
+
+            SECTION("Insert and Remove Elements in Random Order") {
+                mHeap.insert(10);
+                mHeap.insert(20);
+                mHeap.insert(30);
+                mHeap.insert(40);
+                mHeap.insert(50);
+
+                mHeap.extractExtreme();
+                mHeap.insert(5);
+                mHeap.extractExtreme();
+                mHeap.insert(100);
+                mHeap.extractExtreme();
+                mHeap.insert(15);
+                mHeap.extractExtreme();
+                mHeap.insert(25);
+                mHeap.extractExtreme();
+
+                REQUIRE(mHeap.size() == 4);
+                REQUIRE(mHeap.extreme() == 20);
+            }
+        }
+    }
 }
